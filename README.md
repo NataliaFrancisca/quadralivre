@@ -5,11 +5,19 @@
 ## O que essa API permite:
 
 ### Quadra (`/quadra`):
-- [ ] registrar quadra
+- [X] registrar quadra
 - [ ] buscar quadra (`/id`)
-- [ ] buscar por quadras
-- [ ] editar quadra
-- [ ] deletar quadra (`/id`)
+- [X] buscar por quadras (`/email`)
+- [X] buscar por quadras
+- [X] editar quadra
+- [X] deletar quadra (`/id`)
+
+### Gestor (`/gestor`):
+- [X] registrar gestor
+- [X] buscar gestor (`/email`)
+- [X] buscar por gestores
+- [X] editar gestor (`/id` & `{body}`)
+- [X] deletar gestor (`/id`)
 
 ### Reserva (`/reserva`):
 - [ ] criar uma reserva
