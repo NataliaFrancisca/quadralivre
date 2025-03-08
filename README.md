@@ -32,7 +32,7 @@
 - [ ] deletar funcionamento (`/id`)
 
 ### Responsavel (`/responsavel`):
-- [ ] registrar responsável
-- [ ] buscar por responavel (`/cpf`)
-- [ ] editar responsável (`/cpf`)
-- [ ] deletar responsável (`/cpf`)
+- [X] registrar responsável
+- [X] buscar por responavel (`/cpf`)
+- [X] editar responsável (`/cpf` & `{body}`)
+- [X] deletar responsável (`/cpf`)
