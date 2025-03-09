@@ -26,10 +26,12 @@
 - [ ] editar reserva (`/id`)
 - [ ] deletar reserva (`/id`)
 
-### DiaSemanaFuncionamento: (`/diasemanafuncionamento`):
-- [ ] registrar funcionamento
-- [ ] editar funcionamento (`/id`)
-- [ ] deletar funcionamento (`/id`)
+### Funcionamento: (`/funcionamento`):
+- [X] registrar funcionamento (`/quadra_id` & `[{funcionamento}]`)
+- [X] buscar por funcionamento (`/quadra_id`)
+- [X] editar funcionamento (`{body}`)
+- [X] editar disponibilidade (`/id/atualizar-disponibilidade?disponibilidade=boolean`)
+- [X] deletar funcionamento (`/id`)
 
 ### Responsavel (`/responsavel`):
 - [X] registrar responsável
