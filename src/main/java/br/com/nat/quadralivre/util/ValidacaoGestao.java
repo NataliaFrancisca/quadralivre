@@ -7,11 +7,11 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ValidatorGestor {
+public class ValidacaoGestao {
     final private GestorRepository gestorRepository;
 
     @Autowired
-    public ValidatorGestor(GestorRepository gestorRepository){
+    public ValidacaoGestao(GestorRepository gestorRepository){
         this.gestorRepository = gestorRepository;
     }
 

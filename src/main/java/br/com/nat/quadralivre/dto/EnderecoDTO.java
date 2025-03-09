@@ -2,8 +2,7 @@ package br.com.nat.quadralivre.dto;
 
 import br.com.nat.quadralivre.enums.Estados;
 import br.com.nat.quadralivre.model.Endereco;
-import br.com.nat.quadralivre.util.Estado;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import br.com.nat.quadralivre.validation.Estado;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotNull;

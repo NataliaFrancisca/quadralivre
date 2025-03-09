@@ -1,10 +1,10 @@
-package br.com.nat.quadralivre.util;
+package br.com.nat.quadralivre.validation;
 
 import br.com.nat.quadralivre.enums.Estados;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
-public class ValidatorEstado implements ConstraintValidator<Estado, Estados> {
+public class EstadoValidacao implements ConstraintValidator<Estado, Estados> {
 
     @Override
     public void initialize(Estado estado){}

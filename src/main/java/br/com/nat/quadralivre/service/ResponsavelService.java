@@ -2,7 +2,7 @@ package br.com.nat.quadralivre.service;
 
 import br.com.nat.quadralivre.model.Responsavel;
 import br.com.nat.quadralivre.repository.ResponsavelRepository;
-import br.com.nat.quadralivre.util.ValidatorResponsavel;
+import br.com.nat.quadralivre.util.ValidacaoResponsavel;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,16 +12,16 @@ import java.util.Optional;
 @Service
 public class ResponsavelService {
     private final ResponsavelRepository responsavelRepository;
-    private final ValidatorResponsavel validatorResponsavel;
+    private final ValidacaoResponsavel validacaoResponsavel;
 
     @Autowired
-    public ResponsavelService(ResponsavelRepository responsavelRepository, ValidatorResponsavel validatorResponsavel){
+    public ResponsavelService(ResponsavelRepository responsavelRepository, ValidacaoResponsavel validacaoResponsavel){
         this.responsavelRepository = responsavelRepository;
-        this.validatorResponsavel = validatorResponsavel;
+        this.validacaoResponsavel = validacaoResponsavel;
     }
 
     private Responsavel buscaPeloResponsavel(String cpf){
-        this.validatorResponsavel.validarCPF(cpf);
+        this.validacaoResponsavel.validarCPF(cpf);
 
         Optional<Responsavel> responsavel = this.responsavelRepository.findByCpf(cpf);
 
@@ -33,7 +33,7 @@ public class ResponsavelService {
     }
 
     public Responsavel create(Responsavel responsavel){
-        this.validatorResponsavel.validar(responsavel);
+        this.validacaoResponsavel.validar(responsavel);
         return this.responsavelRepository.save(responsavel);
     }
 
@@ -44,7 +44,7 @@ public class ResponsavelService {
     public Responsavel updateByCPF(String cpf, Responsavel responsavelAtualizado){
         Responsavel responsavelParaAtualizar = this.buscaPeloResponsavel(cpf);
 
-        this.validatorResponsavel.validarAtualizacao(responsavelParaAtualizar, responsavelAtualizado);
+        this.validacaoResponsavel.validarAtualizacao(responsavelParaAtualizar, responsavelAtualizado);
 
         responsavelParaAtualizar.setCpf(responsavelAtualizado.getCpf());
         responsavelParaAtualizar.setNome(responsavelAtualizado.getNome());

@@ -3,7 +3,7 @@ package br.com.nat.quadralivre.service;
 import br.com.nat.quadralivre.model.Gestor;
 import br.com.nat.quadralivre.repository.GestorRepository;
 import br.com.nat.quadralivre.repository.QuadraRepository;
-import br.com.nat.quadralivre.util.ValidatorGestor;
+import br.com.nat.quadralivre.util.ValidacaoGestao;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,13 +14,13 @@ import java.util.Optional;
 @Service
 public class GestorService {
     final private GestorRepository gestorRepository;
-    final private ValidatorGestor validatorGestor;
+    final private ValidacaoGestao validacaoGestao;
     final private QuadraRepository quadraRepository;
 
     @Autowired
-    public GestorService(GestorRepository gestorRepository, ValidatorGestor validatorGestor, QuadraRepository quadraRepository) {
+    public GestorService(GestorRepository gestorRepository, ValidacaoGestao validacaoGestao, QuadraRepository quadraRepository) {
         this.gestorRepository = gestorRepository;
-        this.validatorGestor = validatorGestor;
+        this.validacaoGestao = validacaoGestao;
         this.quadraRepository = quadraRepository;
     }
 
@@ -35,7 +35,7 @@ public class GestorService {
     }
 
     public Gestor create(Gestor gestor){
-        this.validatorGestor.validar(gestor);
+        this.validacaoGestao.validar(gestor);
         return this.gestorRepository.save(gestor);
     }
 
@@ -56,7 +56,7 @@ public class GestorService {
     public Gestor update(Long id, Gestor gestor){
         Gestor gestorParaAtualizar = this.buscaPeloGestorEFazValidacao(id);
 
-        this.validatorGestor.validarAtualizacao(gestorParaAtualizar, gestor);
+        this.validacaoGestao.validarAtualizacao(gestorParaAtualizar, gestor);
 
         gestorParaAtualizar.setNome(gestor.getNome());
         gestorParaAtualizar.setEmail(gestor.getEmail());
