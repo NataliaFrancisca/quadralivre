@@ -12,11 +12,11 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class ValidatorResponsavel {
+public class ValidacaoResponsavel {
     private final ResponsavelRepository responsavelRepository;
 
     @Autowired
-    public ValidatorResponsavel(ResponsavelRepository responsavelRepository){
+    public ValidacaoResponsavel(ResponsavelRepository responsavelRepository){
         this.responsavelRepository = responsavelRepository;
     }
 

@@ -6,14 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
-public class ValidatorQuadra {
+public class ValidacaoQuadra {
     final private QuadraRepository quadraRepository;
 
     @Autowired
-    public ValidatorQuadra(QuadraRepository quadraRepository){
+    public ValidacaoQuadra(QuadraRepository quadraRepository){
         this.quadraRepository = quadraRepository;
     }
 
