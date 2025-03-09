@@ -5,7 +5,7 @@ import br.com.nat.quadralivre.model.Gestor;
 import br.com.nat.quadralivre.model.Quadra;
 import br.com.nat.quadralivre.repository.GestorRepository;
 import br.com.nat.quadralivre.repository.QuadraRepository;
-import br.com.nat.quadralivre.util.ValidatorQuadra;
+import br.com.nat.quadralivre.util.ValidacaoQuadra;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,13 +17,13 @@ import java.util.Optional;
 public class QuadraService {
     final private QuadraRepository quadraRepository;
     final private GestorRepository gestorRepository;
-    final private ValidatorQuadra validatorQuadra;
+    final private ValidacaoQuadra validacaoQuadra;
 
     @Autowired
-    public QuadraService(QuadraRepository quadraRepository, ValidatorQuadra validatorQuadra, GestorRepository gestorRepository){
+    public QuadraService(QuadraRepository quadraRepository, ValidacaoQuadra validacaoQuadra, GestorRepository gestorRepository){
         this.quadraRepository = quadraRepository;
         this.gestorRepository = gestorRepository;
-        this.validatorQuadra = validatorQuadra;
+        this.validacaoQuadra = validacaoQuadra;
     }
 
     private Quadra buscarPelaQuadraEFazValidacao(Long id){
@@ -47,7 +47,7 @@ public class QuadraService {
             throw new EntityNotFoundException("Não encontramos gestor com esse número de ID.");
         }
 
-        this.validatorQuadra.validar(quadra);
+        this.validacaoQuadra.validar(quadra);
         quadra.setGestor(gestorOptional.get());
         return QuadraDTO.fromEntity(this.quadraRepository.save(quadra));
     }
@@ -73,7 +73,7 @@ public class QuadraService {
     public QuadraDTO update(Long id, Quadra quadra){
         Quadra quadraParaAtualizar = this.buscarPelaQuadraEFazValidacao(id);
 
-        this.validatorQuadra.validarAtualizacao(quadraParaAtualizar, quadra);
+        this.validacaoQuadra.validarAtualizacao(quadraParaAtualizar, quadra);
 
         Optional<Gestor> gestorOptional = this.gestorRepository.findById(quadra.getGestor_id());
 
