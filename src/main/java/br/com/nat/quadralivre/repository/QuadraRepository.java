@@ -9,8 +9,6 @@ import java.util.Optional;
 
 public interface QuadraRepository extends JpaRepository<Quadra, Long> {
     boolean existsByEndereco(Endereco endereco);
-    boolean existsByGestorEmail(String email);
     boolean existsByTitulo(String titulo);
-    Optional<Quadra> findByTitulo(String titulo);
-    Optional<List<Quadra>> findAllByGestorEmail(String email);
+    List<Quadra> findAllByGestorEmail(String email);
 }
