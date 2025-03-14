@@ -1,4 +1,4 @@
-package br.com.nat.quadralivre.util;
+package br.com.nat.quadralivre.service.validacao;
 
 import br.com.nat.quadralivre.model.Gestor;
 import br.com.nat.quadralivre.repository.GestorRepository;

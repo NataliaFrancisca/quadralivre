@@ -1,4 +1,4 @@
-package br.com.nat.quadralivre.util;
+package br.com.nat.quadralivre.service.validacao;
 
 import br.com.caelum.stella.ValidationMessage;
 import br.com.caelum.stella.validation.CPFValidator;

@@ -54,4 +54,13 @@ public class QuadraDTO {
 
         return quadraDTO;
     }
+
+    public static QuadraDTO fromEntityShort(Quadra quadra){
+        QuadraDTO quadraDTO = new QuadraDTO();
+
+        quadraDTO.setTitulo(quadra.getTitulo());
+        quadraDTO.setEndereco(EnderecoDTO.fromEndereco(quadra.getEndereco()));
+
+        return quadraDTO;
+    }
 }
