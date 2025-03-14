@@ -40,4 +40,15 @@ public class ResponsavelDTO {
 
         return responsavel;
     }
+
+    public static ResponsavelDTO fromEntity(Responsavel responsavel){
+        ResponsavelDTO responsavelDTO = new ResponsavelDTO();
+
+        responsavelDTO.setCpf(responsavel.getCpf());
+        responsavelDTO.setNome(responsavel.getNome());
+        responsavelDTO.setTelefone(responsavel.getTelefone());
+        responsavelDTO.setEmail(responsavel.getEmail());
+
+        return responsavelDTO;
+    }
 }
