@@ -2,7 +2,6 @@ package br.com.nat.quadralivre.service;
 
 import br.com.nat.quadralivre.model.Gestor;
 import br.com.nat.quadralivre.repository.GestorRepository;
-import br.com.nat.quadralivre.repository.QuadraRepository;
 import br.com.nat.quadralivre.service.validacao.ValidacaoGestao;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,16 +14,14 @@ import java.util.Optional;
 public class GestorService {
     final private GestorRepository gestorRepository;
     final private ValidacaoGestao validacaoGestao;
-    final private QuadraRepository quadraRepository;
 
     @Autowired
-    public GestorService(GestorRepository gestorRepository, ValidacaoGestao validacaoGestao, QuadraRepository quadraRepository) {
+    public GestorService(GestorRepository gestorRepository, ValidacaoGestao validacaoGestao) {
         this.gestorRepository = gestorRepository;
         this.validacaoGestao = validacaoGestao;
-        this.quadraRepository = quadraRepository;
     }
 
-    private Gestor buscaPeloGestorEFazValidacao(Long id){
+    private Gestor buscaPeloGestor(Long id){
         Optional<Gestor> gestor = this.gestorRepository.findById(id);
 
         if(gestor.isEmpty()){
@@ -50,11 +47,17 @@ public class GestorService {
     }
 
     public List<Gestor> getAll(){
+        List<Gestor> gestores = this.gestorRepository.findAll();
+
+        if(gestores.isEmpty()){
+            throw new EntityNotFoundException("Não encontramos nenhum gestor cadastrado.");
+        }
+
         return this.gestorRepository.findAll();
     }
 
     public Gestor update(Long id, Gestor gestor){
-        Gestor gestorParaAtualizar = this.buscaPeloGestorEFazValidacao(id);
+        Gestor gestorParaAtualizar = this.buscaPeloGestor(id);
 
         this.validacaoGestao.validarAtualizacao(gestorParaAtualizar, gestor);
 
@@ -65,13 +68,11 @@ public class GestorService {
         return gestorParaAtualizar;
     }
 
-    public void delete(Long id){
-        Gestor gestorParaDeletar = this.buscaPeloGestorEFazValidacao(id);
+    public void delete(Long id) {
+        boolean existeGestorComId = this.gestorRepository.existsById(id);
 
-        boolean existeQuadrasAssociadasAoGestor = this.quadraRepository.existsByGestorEmail(gestorParaDeletar.getEmail());
-
-        if(existeQuadrasAssociadasAoGestor){
-           throw new IllegalStateException("Não é possível excluir o gestor porque ele ainda tem quadras associadas.");
+        if(!existeGestorComId){
+            throw new EntityNotFoundException("Não existe gestor com esse número de ID.");
         }
 
         this.gestorRepository.deleteById(id);
