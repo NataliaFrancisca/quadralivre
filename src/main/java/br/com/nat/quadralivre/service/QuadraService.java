@@ -5,7 +5,7 @@ import br.com.nat.quadralivre.model.Gestor;
 import br.com.nat.quadralivre.model.Quadra;
 import br.com.nat.quadralivre.repository.GestorRepository;
 import br.com.nat.quadralivre.repository.QuadraRepository;
-import br.com.nat.quadralivre.util.ValidacaoQuadra;
+import br.com.nat.quadralivre.service.validacao.ValidacaoQuadra;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

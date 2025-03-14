@@ -2,7 +2,7 @@ package br.com.nat.quadralivre.service;
 
 import br.com.nat.quadralivre.model.Responsavel;
 import br.com.nat.quadralivre.repository.ResponsavelRepository;
-import br.com.nat.quadralivre.util.ValidacaoResponsavel;
+import br.com.nat.quadralivre.service.validacao.ValidacaoResponsavel;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
