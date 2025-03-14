@@ -20,11 +20,11 @@
 - [X] deletar gestor (`/id`)
 
 ### Reserva (`/reserva`):
-- [ ] criar uma reserva
-- [ ] buscar por reserva (`/id`)
-- [ ] buscar por reservas
-- [ ] editar reserva (`/id`)
-- [ ] deletar reserva (`/id`)
+- [X] criar uma reserva
+- [X] buscar por reserva (`/id`)
+- [X] buscar por reservas
+- [X] buscar por reservas feitas em determinada quadra (`/quadra/quadraId`) 
+- [X] deletar reserva (`/id`)
 
 ### Funcionamento: (`/funcionamento`):
 - [X] registrar funcionamento (`/quadra_id` & `[{funcionamento}]`)
@@ -32,6 +32,9 @@
 - [X] editar funcionamento (`{body}`)
 - [X] editar disponibilidade (`/id/atualizar-disponibilidade?disponibilidade=boolean`)
 - [X] deletar funcionamento (`/id`)
+
+### Horarios Disponiveis: 
+- [X] buscar por horarios disponiveis para reserva (`/horarios-disponiveis/quadra/quadraId/data/2025-03-15`)
 
 ### Responsavel (`/responsavel`):
 - [X] registrar responsável
