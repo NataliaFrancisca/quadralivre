@@ -1,6 +1,7 @@
 package br.com.nat.quadralivre.controller;
 
 import br.com.nat.quadralivre.dto.ResponsavelDTO;
+import br.com.nat.quadralivre.dto.ResponsavelSimplesDTO;
 import br.com.nat.quadralivre.infra.RespostaAPI;
 import br.com.nat.quadralivre.service.ResponsavelService;
 import jakarta.transaction.Transactional;
@@ -24,35 +25,33 @@ public class ResponsavelController {
     public ResponseEntity<RespostaAPI> create(@Valid @RequestBody ResponsavelDTO responsavelDTO){
         return RespostaAPI.build(
                 HttpStatus.CREATED,
-                "Responsável cadastrado com sucesso.",
-                this.responsavelService.create(ResponsavelDTO.toEntity(responsavelDTO))
+                this.responsavelService.create(responsavelDTO)
         );
     }
 
-    @GetMapping("/{cpf}")
-    public ResponseEntity<RespostaAPI> getByCPF(@PathVariable String cpf){
+    @GetMapping
+    public ResponseEntity<RespostaAPI> getByCPF(@RequestParam String cpf){
+        return RespostaAPI.build(
+              HttpStatus.OK,
+              this.responsavelService.getByCPF(cpf)
+        );
+    }
+
+    @PutMapping
+    public ResponseEntity<RespostaAPI> updateByCPF(@RequestParam String cpf, @RequestBody @Valid ResponsavelSimplesDTO responsavelSimplesDTO){
         return RespostaAPI.build(
                 HttpStatus.OK,
-                this.responsavelService.getByCPF(cpf)
+                this.responsavelService.update(cpf, responsavelSimplesDTO)
         );
     }
 
-    @PutMapping("/{cpf}")
-    public ResponseEntity<RespostaAPI> updateByCPF(@PathVariable String cpf, @RequestBody @Valid ResponsavelDTO responsavelDTO){
-        return RespostaAPI.build(
-                HttpStatus.OK,
-                "Responsável atualizado com sucesso.",
-                this.responsavelService.updateByCPF(cpf, ResponsavelDTO.toEntity(responsavelDTO))
-        );
-    }
-
-    @DeleteMapping("/{cpf}")
+    @DeleteMapping
     @Transactional
-    public ResponseEntity<RespostaAPI> deleteByCPF(@PathVariable String cpf){
+    public ResponseEntity<RespostaAPI> deleteByCPF(@RequestParam String cpf){
         this.responsavelService.delete(cpf);
         return RespostaAPI.build(
                 HttpStatus.OK,
-                "Responsável deletado com sucesso."
+                "Responsavel deletado com sucesso."
         );
     }
 }
