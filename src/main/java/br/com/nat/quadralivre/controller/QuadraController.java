@@ -24,24 +24,15 @@ public class QuadraController {
     public ResponseEntity<RespostaAPI> create(@Valid @RequestBody QuadraDTO quadraDTO){
         return RespostaAPI.build(
                 HttpStatus.CREATED,
-                "Quadra cadastrada com sucesso.",
-                this.quadraService.create(QuadraDTO.toEntity(quadraDTO))
+                this.quadraService.create(quadraDTO)
         );
     }
 
-    @GetMapping()
-    public ResponseEntity<RespostaAPI> getAllByEmail(@RequestParam(required = false) @Email String email){
-
-        if(email == null || email.isBlank()){
-            return RespostaAPI.build(
-                    HttpStatus.OK,
-                    this.quadraService.get()
-            );
-        }
-
+    @GetMapping
+    public ResponseEntity<RespostaAPI> getAll(){
         return RespostaAPI.build(
                 HttpStatus.OK,
-                this.quadraService.getAllByEmail(email)
+                this.quadraService.get()
         );
     }
 
@@ -53,17 +44,26 @@ public class QuadraController {
         );
     }
 
+    @GetMapping("/gestor")
+    public ResponseEntity<RespostaAPI> getAllByGestor(@RequestParam @Email String email){
+        return RespostaAPI.build(
+                HttpStatus.OK,
+                this.quadraService.getAllByEmail(email)
+        );
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<RespostaAPI> update(@PathVariable Long id, @Valid @RequestBody QuadraDTO quadraDTO){
         return RespostaAPI.build(
                 HttpStatus.OK,
-                this.quadraService.update(id, QuadraDTO.toEntity(quadraDTO))
+                this.quadraService.update(id, quadraDTO)
         );
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<RespostaAPI> delete(@PathVariable Long id){
         this.quadraService.delete(id);
+
         return RespostaAPI.build(
                 HttpStatus.OK,
                 "Quadra deletada com sucesso."
