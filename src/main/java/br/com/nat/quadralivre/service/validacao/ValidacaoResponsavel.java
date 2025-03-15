@@ -2,6 +2,8 @@ package br.com.nat.quadralivre.service.validacao;
 
 import br.com.caelum.stella.ValidationMessage;
 import br.com.caelum.stella.validation.CPFValidator;
+import br.com.nat.quadralivre.dto.ResponsavelDTO;
+import br.com.nat.quadralivre.dto.ResponsavelSimplesDTO;
 import br.com.nat.quadralivre.exceptions.CPFInvalidoException;
 import br.com.nat.quadralivre.model.Responsavel;
 import br.com.nat.quadralivre.repository.ResponsavelRepository;
@@ -38,23 +40,19 @@ public class ValidacaoResponsavel {
         validarUnicidade("telefone", telefone, responsavelRepository.existsByTelefone(telefone));
     }
 
-    public void validar(Responsavel responsavel){
-        this.verificarCpfExistente(responsavel.getCpf());
-        this.verificarEmailExistente(responsavel.getEmail());
-        this.verificarTelefoneExistente(responsavel.getTelefone());
+    public void validar(ResponsavelDTO responsavelDTO){
+        this.verificarCpfExistente(responsavelDTO.getCpf());
+        this.verificarEmailExistente(responsavelDTO.getEmail());
+        this.verificarTelefoneExistente(responsavelDTO.getTelefone());
     }
 
-    public void validarAtualizacao(Responsavel responsavel, Responsavel responsavelAtualizado){
-        if(!responsavel.getCpf().equals(responsavelAtualizado.getCpf())){
-            this.verificarCpfExistente(responsavelAtualizado.getCpf());
+    public void validarAtualizacao(Responsavel responsavel, ResponsavelSimplesDTO responsavelSimplesDTO){
+        if(!responsavel.getEmail().equals(responsavelSimplesDTO.getEmail())){
+            this.verificarEmailExistente(responsavelSimplesDTO.getEmail());
         }
 
-        if(!responsavel.getEmail().equals(responsavelAtualizado.getEmail())){
-            this.verificarEmailExistente(responsavelAtualizado.getEmail());
-        }
-
-        if(!responsavel.getTelefone().equals(responsavelAtualizado.getTelefone())){
-            this.verificarTelefoneExistente(responsavelAtualizado.getTelefone());
+        if(!responsavel.getTelefone().equals(responsavelSimplesDTO.getTelefone())){
+            this.verificarTelefoneExistente(responsavelSimplesDTO.getTelefone());
         }
     }
 
