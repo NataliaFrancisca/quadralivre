@@ -1,13 +1,13 @@
 package br.com.nat.quadralivre.service;
 
+import br.com.nat.quadralivre.dto.ResponsavelDTO;
+import br.com.nat.quadralivre.dto.ResponsavelSimplesDTO;
 import br.com.nat.quadralivre.model.Responsavel;
 import br.com.nat.quadralivre.repository.ResponsavelRepository;
 import br.com.nat.quadralivre.service.validacao.ValidacaoResponsavel;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class ResponsavelService {
@@ -23,39 +23,40 @@ public class ResponsavelService {
     private Responsavel buscaPeloResponsavel(String cpf){
         this.validacaoResponsavel.validarCPF(cpf);
 
-        Optional<Responsavel> responsavel = this.responsavelRepository.findByCpf(cpf);
-
-        if(responsavel.isEmpty()){
-            throw new EntityNotFoundException("Não existe cadastro com esse número de CPF.");
-        }
-
-        return responsavel.get();
+        return this.responsavelRepository.findByCpf(cpf)
+                .orElseThrow(() -> new EntityNotFoundException("Não existe cadastro com esse número de CPF."));
     }
 
-    public Responsavel create(Responsavel responsavel){
-        this.validacaoResponsavel.validar(responsavel);
-        return this.responsavelRepository.save(responsavel);
+    public ResponsavelDTO create(ResponsavelDTO responsavelDTO){
+        this.validacaoResponsavel.validar(responsavelDTO);
+        Responsavel responsavelParaSalvar = this.responsavelRepository.save(ResponsavelDTO.toEntity(responsavelDTO));
+        return ResponsavelDTO.fromEntity(responsavelParaSalvar);
     }
 
-    public Responsavel getByCPF(String cpf){
-        return this.buscaPeloResponsavel(cpf);
+    public ResponsavelDTO getByCPF(String cpf){
+        Responsavel responsavel = this.buscaPeloResponsavel(cpf);
+        return ResponsavelDTO.fromEntity(responsavel);
     }
 
-    public Responsavel updateByCPF(String cpf, Responsavel responsavelAtualizado){
+    public ResponsavelDTO update(String cpf, ResponsavelSimplesDTO responsavelDTO){
         Responsavel responsavelParaAtualizar = this.buscaPeloResponsavel(cpf);
 
-        this.validacaoResponsavel.validarAtualizacao(responsavelParaAtualizar, responsavelAtualizado);
+        this.validacaoResponsavel.validarAtualizacao(
+                responsavelParaAtualizar,
+                responsavelDTO
+        );
 
-        responsavelParaAtualizar.setCpf(responsavelAtualizado.getCpf());
-        responsavelParaAtualizar.setNome(responsavelAtualizado.getNome());
-        responsavelParaAtualizar.setEmail(responsavelAtualizado.getEmail());
-        responsavelParaAtualizar.setTelefone(responsavelAtualizado.getTelefone());
+        responsavelParaAtualizar.setNome(responsavelDTO.getNome());
+        responsavelParaAtualizar.setEmail(responsavelDTO.getEmail());
+        responsavelParaAtualizar.setTelefone(responsavelDTO.getTelefone());
 
-        return this.responsavelRepository.save(responsavelParaAtualizar);
+        this.responsavelRepository.save(responsavelParaAtualizar);
+
+        return ResponsavelDTO.fromEntity(responsavelParaAtualizar);
     }
 
     public void delete(String cpf){
-        buscaPeloResponsavel(cpf);
+        this.buscaPeloResponsavel(cpf);
         this.responsavelRepository.deleteByCpf(cpf);
     }
 }
