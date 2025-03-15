@@ -1,5 +1,6 @@
 package br.com.nat.quadralivre.service;
 
+import br.com.nat.quadralivre.dto.EnderecoDTO;
 import br.com.nat.quadralivre.dto.QuadraDTO;
 import br.com.nat.quadralivre.model.Gestor;
 import br.com.nat.quadralivre.model.Quadra;
@@ -11,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class QuadraService {
@@ -27,64 +27,68 @@ public class QuadraService {
     }
 
     private Quadra buscarPelaQuadraEFazValidacao(Long id){
-        Optional<Quadra> quadra = this.quadraRepository.findById(id);
-
-        if(quadra.isEmpty()){
-            throw new EntityNotFoundException("Não encontramos quadra com esse número de identificação.");
-        }
-
-        return quadra.get();
+        return this.quadraRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Não encontramos quadra com esse número de ID."));
     }
 
-    public QuadraDTO create(Quadra quadra){
-        if(quadra.getGestor_id() == null){
-            throw new IllegalArgumentException("O gestor da quadra não pode ser nulo.");
-        }
+    private Gestor buscarPeloGestor(Long id){
+        return this.gestorRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Não encontramos gestor com ess número de ID."));
+    }
 
-        Optional<Gestor> gestorOptional = this.gestorRepository.findById(quadra.getGestor_id());
 
-        if(gestorOptional.isEmpty()){
-            throw new EntityNotFoundException("Não encontramos gestor com esse número de ID.");
-        }
+    public QuadraDTO create(QuadraDTO quadraDTO){
+        Gestor gestor = this.buscarPeloGestor(quadraDTO.getGestor_id());
 
-        this.validacaoQuadra.validar(quadra);
-        quadra.setGestor(gestorOptional.get());
-        return QuadraDTO.fromEntity(this.quadraRepository.save(quadra));
+        this.validacaoQuadra.validar(quadraDTO);
+
+        Quadra quadraParaSalvar = QuadraDTO.toEntity(quadraDTO);
+        quadraParaSalvar.setGestor(gestor);
+
+        Quadra quadraSalva = this.quadraRepository.save(quadraParaSalvar);
+
+        return QuadraDTO.fromEntity(quadraSalva);
     }
 
     public List<QuadraDTO> get(){
-        return this.quadraRepository.findAll().stream().map(QuadraDTO::fromEntity).toList();
-    }
-
-    public List<QuadraDTO> getAllByEmail(String email){
-        Optional<List<Quadra>> quadras = this.quadraRepository.findAllByGestorEmail(email);
+        List<Quadra> quadras = this.quadraRepository.findAll();
 
         if(quadras.isEmpty()){
-            throw new EntityNotFoundException("Não encontramos quadras que são gerenciada por esse gestor.");
+            throw new EntityNotFoundException("Não encontramos nenhuma quadra cadastrada.");
         }
 
-        return quadras.get().stream().map(QuadraDTO::fromEntity).toList();
+        return quadras.stream().map(QuadraDTO::fromEntity).toList();
     }
 
     public QuadraDTO getById(Long id){
         return QuadraDTO.fromEntity(this.buscarPelaQuadraEFazValidacao(id));
     }
 
-    public QuadraDTO update(Long id, Quadra quadra){
-        Quadra quadraParaAtualizar = this.buscarPelaQuadraEFazValidacao(id);
 
-        this.validacaoQuadra.validarAtualizacao(quadraParaAtualizar, quadra);
+    public List<QuadraDTO> getAllByEmail(String email){
+        List<Quadra> quadras = this.quadraRepository.findAllByGestorEmail(email);
 
-        Optional<Gestor> gestorOptional = this.gestorRepository.findById(quadra.getGestor_id());
-
-        if(gestorOptional.isEmpty()){
-            throw new EntityNotFoundException("Não encontramos gestor com esse número de identificação.");
+        if(quadras.isEmpty()){
+            throw new EntityNotFoundException("Não encontramos quadras que são gerenciada por esse gestor.");
         }
 
-        quadraParaAtualizar.setTitulo(quadra.getTitulo());
-        quadraParaAtualizar.setGestor_id(quadra.getGestor_id());
-        quadraParaAtualizar.setGestor(gestorOptional.get());
-        quadraParaAtualizar.setEndereco(quadra.getEndereco());
+        return quadras.stream().map(QuadraDTO::fromEntity).toList();
+    }
+
+    public QuadraDTO update(Long id, QuadraDTO quadraDTO){
+        Quadra quadraParaAtualizar = this.buscarPelaQuadraEFazValidacao(id);
+
+        this.validacaoQuadra.validarAtualizacao(quadraParaAtualizar, quadraDTO);
+
+        Gestor gestor = this.gestorRepository.findById(quadraDTO.getGestor_id())
+                .orElseThrow(() -> new EntityNotFoundException("Não encontramos gestor com esse número de identificação."));
+
+        quadraParaAtualizar.setTitulo(quadraDTO.getTitulo());
+        quadraParaAtualizar.setGestor_id(quadraDTO.getGestor_id());
+        quadraParaAtualizar.setGestor(gestor);
+        quadraParaAtualizar.setEndereco(EnderecoDTO.toEndereco(quadraDTO.getEndereco()));
+
+        this.quadraRepository.save(quadraParaAtualizar);
 
         return QuadraDTO.fromEntity(quadraParaAtualizar);
     }
