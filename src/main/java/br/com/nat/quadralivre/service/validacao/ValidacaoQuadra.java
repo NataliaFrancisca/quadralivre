@@ -1,5 +1,7 @@
 package br.com.nat.quadralivre.service.validacao;
 
+import br.com.nat.quadralivre.dto.EnderecoDTO;
+import br.com.nat.quadralivre.dto.QuadraDTO;
 import br.com.nat.quadralivre.model.Quadra;
 import br.com.nat.quadralivre.repository.QuadraRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,18 +17,24 @@ public class ValidacaoQuadra {
         this.quadraRepository = quadraRepository;
     }
 
-    public void validar(Quadra quadra){
-        boolean tituloExiste = this.quadraRepository.existsByTitulo(quadra.getTitulo());
-        boolean enderecoExiste = this.quadraRepository.existsByEndereco(quadra.getEndereco());
-
-        if(tituloExiste && enderecoExiste){
-            throw new DataIntegrityViolationException("Já existe um cadastro para essa quadra.");
+    private void verificarTituloExistente(String titulo){
+        if(this.quadraRepository.existsByTitulo(titulo)){
+            throw new DataIntegrityViolationException("Já existe uma quadra com esse título");
         }
     }
 
-    public void validarAtualizacao(Quadra quadra, Quadra quadraAtualizada){
+    public void validar(QuadraDTO quadra){
+        boolean tituloExiste = this.quadraRepository.existsByTitulo(quadra.getTitulo());
+        boolean enderecoExiste = this.quadraRepository.existsByEndereco(EnderecoDTO.toEndereco(quadra.getEndereco()));
+
+        if(tituloExiste && enderecoExiste){
+            throw new DataIntegrityViolationException("Já existe um cadastro para essa quadra nesse endereço.");
+        }
+    }
+
+    public void validarAtualizacao(Quadra quadra, QuadraDTO quadraAtualizada){
         if(!quadra.getTitulo().equals(quadraAtualizada.getTitulo())){
-            this.validar(quadra);
+            this.verificarTituloExistente(quadraAtualizada.getTitulo());
         }
     }
 }
