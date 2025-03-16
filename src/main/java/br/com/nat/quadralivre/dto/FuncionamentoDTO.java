@@ -20,8 +20,6 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FuncionamentoDTO {
-    private Long id;
-
     @NotNull(message = "Dia da semana é obrigatório")
     @Enumerated(EnumType.STRING)
     @DiasSemana(message = "Digite um dia da semana válido. Ex.: SEGUNDA ou SEXTA")
@@ -41,24 +39,11 @@ public class FuncionamentoDTO {
     public static FuncionamentoDTO fromEntity(Funcionamento funcionamento){
         FuncionamentoDTO funcionamentoDTO = new FuncionamentoDTO();
 
-        funcionamentoDTO.setId(funcionamento.getId());
-        funcionamentoDTO.setDiaSemana(funcionamento.getDia_semana());
+        funcionamentoDTO.setDiaSemana(funcionamento.getDiaSemana());
         funcionamentoDTO.setAbertura(funcionamento.getAbertura());
         funcionamentoDTO.setFechamento(funcionamento.getFechamento());
         funcionamentoDTO.setDisponibilidade(funcionamento.getDisponibilidade());
 
         return funcionamentoDTO;
-    }
-
-    public static Funcionamento toEntity(FuncionamentoDTO funcionamentoDTO){
-        Funcionamento funcionamento = new Funcionamento();
-
-        funcionamento.setId(funcionamentoDTO.getId());
-        funcionamento.setDia_semana(funcionamentoDTO.getDiaSemana());
-        funcionamento.setAbertura(funcionamentoDTO.getAbertura());
-        funcionamento.setFechamento(funcionamentoDTO.getFechamento());
-        funcionamento.setQuadra_id(funcionamentoDTO.getQuadraId());
-
-        return funcionamento;
     }
 }
