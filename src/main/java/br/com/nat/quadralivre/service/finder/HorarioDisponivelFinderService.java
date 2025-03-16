@@ -21,7 +21,7 @@ public class HorarioDisponivelFinderService {
 
         Optional<Funcionamento> optionalFuncionamento = this.funcionamentoRepository.findAllByQuadraId(quadraId)
                 .stream()
-                .filter(dto -> dto.getDia_semana().name().equals(diaDaSemana.name()))
+                .filter(dto -> dto.getDiaSemana().name().equals(diaDaSemana.name()))
                 .findFirst();
 
         if(optionalFuncionamento.isEmpty()){
