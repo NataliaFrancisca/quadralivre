@@ -17,12 +17,9 @@ import java.time.LocalTime;
 @AllArgsConstructor
 public class Funcionamento {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private DiaSemana dia_semana;
+    @Column(nullable = false, unique = true)
+    private DiaSemana diaSemana;
 
     @Column(nullable = false)
     private LocalTime abertura;
@@ -42,7 +39,7 @@ public class Funcionamento {
 
     public Funcionamento(Long quadra_id, DiaSemana dia_semana, LocalTime abertura, LocalTime fechamento){
         this.setQuadra_id(quadra_id);
-        this.setDia_semana(dia_semana);
+        this.setDiaSemana(dia_semana);
         this.setAbertura(abertura);
         this.setFechamento(fechamento);
     }
