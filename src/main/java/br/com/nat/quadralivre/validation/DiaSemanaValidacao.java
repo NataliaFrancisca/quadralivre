@@ -4,6 +4,8 @@ import br.com.nat.quadralivre.enums.DiaSemana;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
+import java.util.Locale;
+
 public class DiaSemanaValidacao implements ConstraintValidator<DiasSemana, DiaSemana> {
 
     @Override
