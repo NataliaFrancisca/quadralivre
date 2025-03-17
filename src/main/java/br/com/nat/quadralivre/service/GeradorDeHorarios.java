@@ -13,38 +13,40 @@ import java.util.Map;
 @Component
 public class GeradorDeHorarios {
     private final int HORAS_PARA_RESERVA_LONGA = 120;
-    private final int HORAS_PARA_RESERVA_CURTA = 60;
     public final int MINUTOS_PARA_INTERVALO = 10;
 
     private HorarioDisponivel criarEntidadeParaHorarioDisponivel(LocalDateTime horarioAgendamento, long horasParaReserva){
         return new HorarioDisponivel(horarioAgendamento.toLocalTime(), horarioAgendamento.toLocalTime().plusMinutes(horasParaReserva));
     }
 
+    private int gerarHash(String horarioAbertura){
+        String conjunto = horarioAbertura.concat(String.valueOf(this.HORAS_PARA_RESERVA_LONGA));
+        return Math.abs(conjunto.hashCode());
+    }
+
     public Map<Integer, HorarioDisponivel> gerarHorarios(Funcionamento funcionamento, LocalDate dataSolicitada){
+        final int HORAS_PARA_RESERVA_CURTA = 60;
+
         Map<Integer, HorarioDisponivel> horariosParaReserva = new LinkedHashMap<>();
 
         LocalDateTime horarioAbertura = LocalDateTime.of(dataSolicitada, funcionamento.getAbertura());
         LocalDateTime horarioEncerramento = LocalDateTime.of(dataSolicitada, funcionamento.getFechamento());
         LocalDateTime horarioAgendamento = horarioAbertura;
 
-        int identificadorDasReservas = 0;
-
         while(horarioAgendamento.plusMinutes(this.HORAS_PARA_RESERVA_LONGA).isBefore(horarioEncerramento)){
-
             horariosParaReserva.put(
-                    identificadorDasReservas,
+                    gerarHash(horarioAgendamento.toString()),
                     this.criarEntidadeParaHorarioDisponivel(horarioAgendamento, this.HORAS_PARA_RESERVA_LONGA)
             );
 
             horarioAgendamento = horarioAgendamento.plusMinutes(this.HORAS_PARA_RESERVA_LONGA).plusMinutes(this.MINUTOS_PARA_INTERVALO);
-            identificadorDasReservas +=1;
         }
 
-        if (!horarioAgendamento.plusMinutes(this.HORAS_PARA_RESERVA_CURTA).isAfter(horarioEncerramento)) {
+        if (!horarioAgendamento.plusMinutes(HORAS_PARA_RESERVA_CURTA).isAfter(horarioEncerramento)) {
             long diferencaEmMinutos = horarioAgendamento.until(horarioEncerramento, ChronoUnit.MINUTES) - this.MINUTOS_PARA_INTERVALO;
 
             horariosParaReserva.put(
-                    identificadorDasReservas,
+                    gerarHash(horarioAgendamento.toString()),
                     this.criarEntidadeParaHorarioDisponivel(horarioAgendamento, diferencaEmMinutos)
             );
         }
