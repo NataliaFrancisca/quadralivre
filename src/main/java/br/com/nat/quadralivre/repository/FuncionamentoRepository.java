@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FuncionamentoRepository extends JpaRepository<Funcionamento, Long> {
-    Optional<Funcionamento> findAllByQuadraIdAndDiaSemana(Long quadraId, DiaSemana diaSemana);
+    Optional<Funcionamento> findByQuadraIdAndDiaSemana(Long quadraId, DiaSemana diaSemana);
 
     List<Funcionamento> findAllByQuadraId(Long quadraId);
     @Query(value = """
