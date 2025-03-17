@@ -1,10 +1,14 @@
 package br.com.nat.quadralivre.service;
 
+import br.com.nat.quadralivre.enums.DiaSemana;
 import br.com.nat.quadralivre.model.Funcionamento;
 import br.com.nat.quadralivre.model.HorarioDisponivel;
 import br.com.nat.quadralivre.model.Reserva;
+import br.com.nat.quadralivre.repository.FuncionamentoRepository;
+import br.com.nat.quadralivre.repository.QuadraRepository;
 import br.com.nat.quadralivre.repository.ReservaRepository;
-import br.com.nat.quadralivre.service.finder.HorarioDisponivelFinderService;
+import br.com.nat.quadralivre.util.DiaSemanaUtils;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,42 +18,46 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
+
 @Service
 public class HorarioDisponivelService {
-    private final ReservaRepository reservaRepository;
-    private final HorarioDisponivelFinderService horarioDisponivelFinderService;
+    private final FuncionamentoRepository funcionamentoRepository;
     private final GeradorDeHorarios geradorDeHorarios;
+    private final ReservaRepository reservaRepository;
+    private final QuadraRepository quadraRepository;
 
     @Autowired
-    public HorarioDisponivelService(ReservaRepository reservaRepository, GeradorDeHorarios geradorDeHorarios, HorarioDisponivelFinderService horarioDisponivelFinderService){
-        this.reservaRepository = reservaRepository;
+    public HorarioDisponivelService(FuncionamentoRepository funcionamentoRepository, GeradorDeHorarios geradorDeHorarios, ReservaRepository reservaRepository, QuadraRepository quadraRepository){
+        this.funcionamentoRepository = funcionamentoRepository;
         this.geradorDeHorarios = geradorDeHorarios;
-        this.horarioDisponivelFinderService = horarioDisponivelFinderService;
+        this.reservaRepository = reservaRepository;
+        this.quadraRepository = quadraRepository;
     }
 
-    public Map<Integer, HorarioDisponivel> buscarPorHorariosDisponiveis(Long quadraId, LocalDate dataSolicitada) {
+    private Funcionamento buscarPeloFuncionamentoDaQuadra(Long quadraId, LocalDate dataSolicitada){
+        this.quadraRepository.findById(quadraId).orElseThrow(() -> new EntityNotFoundException("Não existe quadra cadastrada com esse número de ID."));
 
-        if(dataSolicitada.isBefore(LocalDate.now())){
-            throw new IllegalArgumentException("Agendamentos só podem ser feitos em datas no futuro.");
-        }
+        DiaSemana diaSemana = DiaSemanaUtils.transformaDiaSemanaEmPortugues(dataSolicitada.getDayOfWeek().toString());
 
-        Funcionamento funcionamento = this.horarioDisponivelFinderService.buscaPorHorariosDeFuncionamento(quadraId, dataSolicitada);
+        Funcionamento funcionamento = this.funcionamentoRepository.findByQuadraIdAndDiaSemana(quadraId, diaSemana)
+                .orElseThrow(() -> new EntityNotFoundException("Não encontramos horário de funcionamento para o dia da semana escolhido."));
 
         if(!funcionamento.getDisponibilidade()){
-            throw new IllegalStateException("A quadra não está disponível para o dia solicitado.");
+            throw new IllegalStateException("Quadra não está disponível no dia da semana escolhido.");
         }
 
-        Map<Integer, HorarioDisponivel> horariosDisponiveis = this.geradorDeHorarios.gerarHorarios(funcionamento, dataSolicitada);
+        return funcionamento;
+    }
 
-        if(horariosDisponiveis.isEmpty()){
-            throw new IllegalArgumentException("Não há horários disponiveis para reserva no dia solicitado.");
+    private Map<Integer, HorarioDisponivel> gerarHorariosLivresParaReserva(Funcionamento funcionamento, LocalDate dataSolicitada, List<Reserva> reservas){
+        Map<Integer, HorarioDisponivel> horarios = this.geradorDeHorarios.gerarHorarios(funcionamento, dataSolicitada);
+
+        if(horarios.isEmpty()){
+            throw new IllegalStateException("Não há horários disponíveis para reserva no dia solicitado.");
         }
 
-        List<Reserva> reservas = reservaRepository
-                .findByQuadraIdAndDataBetween(quadraId, dataSolicitada.atStartOfDay(), dataSolicitada.atTime(23, 59, 59));
-
-        if (!reservas.isEmpty()) {
-            horariosDisponiveis.entrySet().removeIf(entry -> {
+        if(!reservas.isEmpty()){
+            horarios.entrySet().removeIf(entry -> {
                 LocalTime horarioInicio = entry.getValue().getHorarioInicio();
                 LocalTime horarioFim = entry.getValue().getHorarioEncerramento();
 
@@ -60,6 +68,27 @@ public class HorarioDisponivelService {
             });
         }
 
-        return horariosDisponiveis;
+        return horarios;
     }
+
+    private List<Reserva> buscarPelasReservasJaFeitas(Long quadraId, LocalDate dataSolicitada){
+        return this.reservaRepository.findByQuadraIdAndDataBetween(
+                quadraId,
+                dataSolicitada.atStartOfDay(),
+                dataSolicitada.atTime(23, 59, 59)
+        );
+    }
+
+    public Map<Integer, HorarioDisponivel> buscarHorariosDisponiveis(Long quadraId, LocalDate dataSolicitada){
+        if(dataSolicitada.isBefore(LocalDate.now())){
+            throw new IllegalArgumentException("Reservas só podem ser feitas em datas no futuro.");
+        }
+
+        Funcionamento funcionamento = this.buscarPeloFuncionamentoDaQuadra(quadraId, dataSolicitada);
+
+        List<Reserva> reservas = this.buscarPelasReservasJaFeitas(quadraId, dataSolicitada);
+
+        return this.gerarHorariosLivresParaReserva(funcionamento, dataSolicitada, reservas);
+    }
+
 }
