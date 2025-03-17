@@ -6,10 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 
@@ -23,11 +20,11 @@ public class HorarioDisponivelController {
         this.horarioDisponivelService = horarioDisponivelService;
     }
 
-    @GetMapping("/quadra/{quadraId}/data/{data}")
-    public ResponseEntity<RespostaAPI> getHorarioDisponiveis(@PathVariable Long quadraId, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate data){
+    @GetMapping
+    public ResponseEntity<RespostaAPI> get(@RequestParam Long quadraId, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate data){
         return RespostaAPI.build(
                 HttpStatus.OK,
-                horarioDisponivelService.buscarPorHorariosDisponiveis(quadraId, data)
+                this.horarioDisponivelService.buscarHorariosDisponiveis(quadraId, data)
         );
     }
 }
