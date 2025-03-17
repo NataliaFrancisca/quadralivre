@@ -22,7 +22,7 @@ public class ReservaFinderService {
     private final HorarioDisponivelService horarioDisponivelService;
 
     public HorarioDisponivel buscarHorarioReserva(ReservaDTO reserva){
-        Map<Integer, HorarioDisponivel> horariosDisponiveis = this.horarioDisponivelService.buscarPorHorariosDisponiveis(
+        Map<Integer, HorarioDisponivel> horariosDisponiveis = this.horarioDisponivelService.buscarHorariosDisponiveis(
                 reserva.getQuadraId(),
                 reserva.getDataSolicitada()
         );
