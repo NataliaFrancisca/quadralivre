@@ -15,7 +15,7 @@ public class FuncionamentoFinderService {
     private final FuncionamentoRepository funcionamentoRepository;
 
     public Funcionamento buscarPeloFuncionamento(DiaSemana diaSemana, Long quadraId){
-        return this.funcionamentoRepository.findAllByQuadraIdAndDiaSemana(quadraId, diaSemana)
+        return this.funcionamentoRepository.findByQuadraIdAndDiaSemana(quadraId, diaSemana)
                 .orElseThrow(() -> new EntityNotFoundException("Não existe cadastro de funcionamento para esse dia da semana."));
     }
 
