@@ -2,6 +2,7 @@ package br.com.nat.quadralivre.service;
 
 import br.com.nat.quadralivre.dto.EnderecoDTO;
 import br.com.nat.quadralivre.dto.QuadraDTO;
+import br.com.nat.quadralivre.mapper.QuadraMapper;
 import br.com.nat.quadralivre.model.Gestor;
 import br.com.nat.quadralivre.model.Quadra;
 import br.com.nat.quadralivre.repository.GestorRepository;
@@ -18,12 +19,18 @@ public class QuadraService {
     final private QuadraRepository quadraRepository;
     final private GestorRepository gestorRepository;
     final private ValidacaoQuadra validacaoQuadra;
+    final private QuadraMapper quadraMapper;
 
     @Autowired
-    public QuadraService(QuadraRepository quadraRepository, ValidacaoQuadra validacaoQuadra, GestorRepository gestorRepository){
+    public QuadraService(QuadraRepository quadraRepository,
+                         ValidacaoQuadra validacaoQuadra,
+                         GestorRepository gestorRepository,
+                         QuadraMapper quadraMapper
+    ){
         this.quadraRepository = quadraRepository;
         this.gestorRepository = gestorRepository;
         this.validacaoQuadra = validacaoQuadra;
+        this.quadraMapper = quadraMapper;
     }
 
     private Quadra buscarPelaQuadraEFazValidacao(Long id){
@@ -42,12 +49,12 @@ public class QuadraService {
 
         this.validacaoQuadra.validar(quadraDTO);
 
-        Quadra quadraParaSalvar = QuadraDTO.toEntity(quadraDTO);
+        Quadra quadraParaSalvar = this.quadraMapper.toQuadraEntidade(quadraDTO);
         quadraParaSalvar.setGestor(gestor);
 
         Quadra quadraSalva = this.quadraRepository.save(quadraParaSalvar);
 
-        return QuadraDTO.fromEntity(quadraSalva);
+        return this.quadraMapper.toDTOCompleto(quadraSalva);
     }
 
     public List<QuadraDTO> get(){
@@ -57,11 +64,11 @@ public class QuadraService {
             throw new EntityNotFoundException("Não encontramos nenhuma quadra cadastrada.");
         }
 
-        return quadras.stream().map(QuadraDTO::fromEntity).toList();
+        return quadras.stream().map(this.quadraMapper::toDTOCompleto).toList();
     }
 
     public QuadraDTO getById(Long id){
-        return QuadraDTO.fromEntity(this.buscarPelaQuadraEFazValidacao(id));
+        return this.quadraMapper.toDTOCompleto(this.buscarPelaQuadraEFazValidacao(id));
     }
 
 
@@ -72,7 +79,7 @@ public class QuadraService {
             throw new EntityNotFoundException("Não encontramos quadras que são gerenciada por esse gestor.");
         }
 
-        return quadras.stream().map(QuadraDTO::fromEntity).toList();
+        return quadras.stream().map(this.quadraMapper::toDTOCompleto).toList();
     }
 
     public QuadraDTO update(Long id, QuadraDTO quadraDTO){
@@ -90,7 +97,7 @@ public class QuadraService {
 
         this.quadraRepository.save(quadraParaAtualizar);
 
-        return QuadraDTO.fromEntity(quadraParaAtualizar);
+        return this.quadraMapper.toDTOCompleto(quadraParaAtualizar);
     }
 
     public void delete(Long id){
