@@ -1,12 +1,12 @@
 package br.com.nat.quadralivre.model;
 
+import br.com.nat.quadralivre.dto.QuadraDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
 
 @Entity(name = "Quadra")
 @Table(name = "Quadra")
@@ -33,11 +33,6 @@ public class Quadra {
     @Embedded
     private Endereco endereco;
 
-    public Quadra(Quadra quadra, Gestor gestor){
-        this.id = quadra.getId();
-        this.titulo = quadra.getTitulo();
-        this.gestor_id = quadra.getGestor_id();
-        this.endereco = quadra.getEndereco();
-        this.gestor = gestor;
+    public Quadra(QuadraDTO quadraDTO) {
     }
 }
