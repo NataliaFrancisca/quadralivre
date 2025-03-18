@@ -1,6 +1,7 @@
 package br.com.nat.quadralivre.service;
 
 import br.com.nat.quadralivre.dto.*;
+import br.com.nat.quadralivre.mapper.QuadraMapper;
 import br.com.nat.quadralivre.mapper.ReservaMapper;
 import br.com.nat.quadralivre.model.HorarioDisponivel;
 import br.com.nat.quadralivre.model.Quadra;
@@ -23,6 +24,7 @@ public class ReservaService {
     private final ValidacaoReserva validacaoReserva;
     private final QuadraRepository quadraRepository;
     private final ReservaMapper reservaMapper;
+    private final QuadraMapper quadraMapper;
     private final ReservaFinderService reservaFinderService;
 
     @Autowired
@@ -31,13 +33,15 @@ public class ReservaService {
             ValidacaoReserva validacaoReserva,
             QuadraRepository quadraRepository,
             ReservaMapper reservaMapper,
-            ReservaFinderService reservaFinderService
+            ReservaFinderService reservaFinderService,
+            QuadraMapper quadraMapper
     ){
         this.reservaRepository = reservaRepository;
         this.validacaoReserva = validacaoReserva;
         this.quadraRepository = quadraRepository;
         this.reservaMapper = reservaMapper;
         this.reservaFinderService = reservaFinderService;
+        this.quadraMapper = quadraMapper;
     }
 
     private Reserva criarEntidadeReserva(ReservaDTO reservaDTO, HorarioDisponivel horarioReserva){
@@ -92,7 +96,7 @@ public class ReservaService {
             throw new EntityNotFoundException("Não existe reservas para essa quadra.");
         }
 
-        return new ReservasQuadraDTO(QuadraDTO.fromEntityShort(quadra), reservas);
+        return new ReservasQuadraDTO(this.quadraMapper.toDTOSimples(quadra), reservas);
     }
 
     public void deleteById(Long id){
