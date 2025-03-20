@@ -1,6 +1,7 @@
 package br.com.nat.quadralivre.model;
 
 import br.com.nat.quadralivre.enums.DiaSemana;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,6 +16,7 @@ import java.time.LocalTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Tag(name = "Funcionamento", description = "Operações relacionadas a funcionamento.")
 public class Funcionamento {
     @Id
     @Enumerated(EnumType.STRING)
