@@ -1,6 +1,7 @@
 package br.com.nat.quadralivre.dto;
 
 import br.com.nat.quadralivre.model.Gestor;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -13,6 +14,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Tag(name = "Gestor", description = "Operações relacionadas a gestor.")
 public class GestorDTO {
     @NotBlank(message = "Nome é obrigatório.")
     private String nome;

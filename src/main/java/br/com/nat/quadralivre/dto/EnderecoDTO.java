@@ -3,6 +3,7 @@ package br.com.nat.quadralivre.dto;
 import br.com.nat.quadralivre.enums.Estados;
 import br.com.nat.quadralivre.model.Endereco;
 import br.com.nat.quadralivre.validation.Estado;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotNull;
@@ -34,6 +35,10 @@ public class EnderecoDTO {
     @NotNull(message = "O estado é obrigatório.")
     @Enumerated(EnumType.STRING)
     @Estado(message = "Digite um estado brasileiro válido. Ex.: SP ou RJ")
+    @Schema(description = "Estado (sigla de 2 letras)", example = "SP", allowableValues = {
+            "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI",
+            "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"
+    })
     private Estados estado;
 
     public static Endereco toEndereco(EnderecoDTO enderecoDTO){

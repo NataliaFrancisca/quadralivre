@@ -1,5 +1,6 @@
 package br.com.nat.quadralivre.model;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,6 +13,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Tag(name = "Gestor", description = "Operações relacionadas a gestor.")
 public class Gestor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

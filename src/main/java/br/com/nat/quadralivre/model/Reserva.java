@@ -1,5 +1,6 @@
 package br.com.nat.quadralivre.model;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,6 +16,7 @@ import java.time.LocalTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Tag(name = "Reserva", description = "Operações relacionadas a reserva.")
 public class Reserva {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

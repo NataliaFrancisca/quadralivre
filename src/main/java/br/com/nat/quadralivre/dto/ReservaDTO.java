@@ -1,5 +1,6 @@
 package br.com.nat.quadralivre.dto;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Tag(name = "Reserva", description = "Operações relacionadas a reserva.")
 public class ReservaDTO {
     @NotNull(message = "Necessário digitar o ID da quadra escolhida.")
     private Long quadraId;

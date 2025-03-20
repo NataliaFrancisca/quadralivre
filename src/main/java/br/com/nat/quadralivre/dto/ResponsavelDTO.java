@@ -1,6 +1,7 @@
 package br.com.nat.quadralivre.dto;
 
 import br.com.nat.quadralivre.model.Responsavel;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -14,6 +15,7 @@ import org.hibernate.validator.constraints.br.CPF;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Tag(name = "Responsável", description = "Operações relacionadas a responsável")
 public class ResponsavelDTO {
     @NotBlank(message = "CPF é obrigatório.")
     @CPF
