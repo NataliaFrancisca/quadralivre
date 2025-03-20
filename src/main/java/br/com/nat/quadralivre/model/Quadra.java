@@ -1,6 +1,8 @@
 package br.com.nat.quadralivre.model;
 
 import br.com.nat.quadralivre.dto.QuadraDTO;
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,6 +16,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Tag(name = "Quadra", description = "Operações relacionadas a quadra.")
 public class Quadra {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
