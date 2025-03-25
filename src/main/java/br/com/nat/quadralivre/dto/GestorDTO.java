@@ -1,6 +1,6 @@
 package br.com.nat.quadralivre.dto;
 
-import br.com.nat.quadralivre.model.Gestor;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -16,6 +16,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @Tag(name = "Gestor", description = "Operações relacionadas a gestor.")
 public class GestorDTO {
+    @Hidden
+    private Long id;
+
     @NotBlank(message = "Nome é obrigatório.")
     private String nome;
 
@@ -26,14 +29,4 @@ public class GestorDTO {
     @NotBlank(message = "Número para contato é obrigatório.")
     @Pattern(regexp = "^\\d{2}\\s9?\\d{4}-\\d{4}$", message = "Número de telefone inválido. Use o formato 'DD' XXXX-XXXX ou 'DD 9XXXX-XXXX'.")
     private String telefone;
-
-    public static Gestor toEntity(GestorDTO gestorDTO){
-        Gestor gestor = new Gestor();
-
-        gestor.setNome(gestorDTO.getNome());
-        gestor.setEmail(gestorDTO.getEmail());
-        gestor.setTelefone(gestorDTO.getTelefone());
-
-        return gestor;
-    }
 }
