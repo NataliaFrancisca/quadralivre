@@ -1,80 +1,84 @@
 package br.com.nat.quadralivre.service;
 
+import br.com.nat.quadralivre.dto.GestorDTO;
+import br.com.nat.quadralivre.mapper.GestorMapper;
 import br.com.nat.quadralivre.model.Gestor;
 import br.com.nat.quadralivre.repository.GestorRepository;
+import br.com.nat.quadralivre.repository.QuadraRepository;
 import br.com.nat.quadralivre.service.validacao.ValidacaoGestor;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class GestorService {
     final private GestorRepository gestorRepository;
+    final private QuadraRepository quadraRepository;
     final private ValidacaoGestor validacaoGestor;
+    final private GestorMapper gestorMapper;
 
     @Autowired
-    public GestorService(GestorRepository gestorRepository, ValidacaoGestor validacaoGestor) {
+    public GestorService(GestorRepository gestorRepository, QuadraRepository quadraRepository, ValidacaoGestor validacaoGestor, GestorMapper gestorMapper) {
         this.gestorRepository = gestorRepository;
+        this.quadraRepository = quadraRepository;
         this.validacaoGestor = validacaoGestor;
+        this.gestorMapper = gestorMapper;
     }
 
-    private Gestor buscaPeloGestor(Long id){
-        Optional<Gestor> gestor = this.gestorRepository.findById(id);
+    private Gestor buscarPeloEmail(String email){
+        return this.gestorRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Gestor com e-mail: " + email + " não encontrado."));
+    }
 
-        if(gestor.isEmpty()){
-            throw new EntityNotFoundException("Não existe organizador com esse número de identificação.");
+    private void validarSeGestorPodeSerRemovido(Long gestorId){
+        boolean gestorGerenciaQuadras = this.quadraRepository.existsByGestorId(gestorId);
+
+        if(gestorGerenciaQuadras){
+            throw new IllegalStateException("Este gestor é responsável por quadras e não pode ser removido no momento.");
         }
-
-        return gestor.get();
     }
 
-    public Gestor create(Gestor gestor){
+    public GestorDTO create(GestorDTO gestor){
         this.validacaoGestor.validar(gestor);
-        return this.gestorRepository.save(gestor);
+
+        Gestor gestorSalvo = this.gestorRepository.save(this.gestorMapper.toGestorEntidade(gestor));
+
+        return this.gestorMapper.toDTOCompleto(gestorSalvo);
     }
 
-    public Gestor get(String email){
-        Optional<Gestor> gestor = this.gestorRepository.findByEmail(email);
+    public GestorDTO get(String email){
+        this.validacaoGestor.validarEmail(email);
 
-        if(gestor.isEmpty()){
-            throw new EntityNotFoundException("Não existe organizador com esse endereço de e-mail");
-        }
+        Gestor gestor = this.buscarPeloEmail(email);
 
-        return gestor.get();
+        return this.gestorMapper.toDTOCompleto(gestor);
     }
 
-    public List<Gestor> getAll(){
+    public List<GestorDTO> getAll(){
         List<Gestor> gestores = this.gestorRepository.findAll();
-
-        if(gestores.isEmpty()){
-            throw new EntityNotFoundException("Não encontramos nenhum gestor cadastrado.");
-        }
-
-        return this.gestorRepository.findAll();
+        return gestores.stream().map(this.gestorMapper::toDTOCompleto).toList();
     }
 
-    public Gestor update(Long id, Gestor gestor){
-        Gestor gestorParaAtualizar = this.buscaPeloGestor(id);
+    public GestorDTO update(String email, GestorDTO gestor){
+        this.validacaoGestor.validarEmail(email);
+
+        Gestor gestorParaAtualizar = this.buscarPeloEmail(email);
 
         this.validacaoGestor.validarAtualizacao(gestorParaAtualizar, gestor);
+        gestorMapper.atualizarEntidade(gestorParaAtualizar, gestor);
+        Gestor gestorAtualizado = this.gestorRepository.save(gestorParaAtualizar);
 
-        gestorParaAtualizar.setNome(gestor.getNome());
-        gestorParaAtualizar.setEmail(gestor.getEmail());
-        gestorParaAtualizar.setTelefone(gestor.getTelefone());
-
-        return gestorParaAtualizar;
+        return this.gestorMapper.toDTOCompleto(gestorAtualizado);
     }
 
-    public void delete(Long id) {
-        boolean existeGestorComId = this.gestorRepository.existsById(id);
+    public void delete(String email) {
+        this.validacaoGestor.validarEmail(email);
 
-        if(!existeGestorComId){
-            throw new EntityNotFoundException("Não existe gestor com esse número de ID.");
-        }
+        Gestor gestorParaDeletar = this.buscarPeloEmail(email);
+        this.validarSeGestorPodeSerRemovido(gestorParaDeletar.getId());
 
-        this.gestorRepository.deleteById(id);
+        this.gestorRepository.delete(gestorParaDeletar);
     }
 }

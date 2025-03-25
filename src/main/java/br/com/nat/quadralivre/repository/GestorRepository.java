@@ -9,4 +9,5 @@ public interface GestorRepository extends JpaRepository<Gestor, Long> {
     boolean existsByEmail(String email);
     boolean existsByTelefone(String telefone);
     Optional<Gestor> findByEmail(String email);
+    void deleteByEmail(String email);
 }
