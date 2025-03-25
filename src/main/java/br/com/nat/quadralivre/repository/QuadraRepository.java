@@ -9,5 +9,6 @@ import java.util.List;
 public interface QuadraRepository extends JpaRepository<Quadra, Long> {
     boolean existsByEndereco(Endereco endereco);
     boolean existsByTitulo(String titulo);
+    boolean existsByGestorId(Long id);
     List<Quadra> findAllByGestorEmail(String email);
 }
