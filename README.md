@@ -45,44 +45,16 @@ Para acessar a documentação, no seu navegador acesso o link: http://localhost:
 </br>
 
 ## 🏗️ O que essa API permite:
+Essa API permite o gerenciamento de reservas de quadras esportivas. As principais entidades são:
+- **Responsável**: Usuário que realiza reservas de horários para utilizar a quadra.
+- **Gestor**: Usuário que administra a quadra, sendo responsável por criá-la e definir seus horários de funcionamento.
+- **Quadra**: Representa as informações básicas da quadra esportiva.
+- **Funcionamento**: Entidade relacionada à Quadra, responsável por definir seus horários de funcionamento ao longo da semana.
+- **Horários Disponíveis**: Lista de horários livres para reserva.
+- **Reserva**: Contém os dados necessários para a criação de uma reserva, incluindo o responsável, a quadra e o horário reservado.
 
-#### Quadra (`/quadra`):
-- [X] registrar quadra
-- [X] buscar quadra (`/id`)
-- [X] buscar por quadras (`/email`)
-- [X] buscar por quadras
-- [X] editar quadra
-- [X] deletar quadra (`/id`)
+[Documentação Completa](https://nat-francisca.notion.site/doc-API-quadralivre-1c1fdff88f3a8051b227d0f9e8629475)
 
-#### Gestor (`/gestor`):
-- [X] registrar gestor
-- [X] buscar gestor (`/email`)
-- [X] buscar por gestores
-- [X] editar gestor (`/id` & `{body}`)
-- [X] deletar gestor (`/id`)
-
-#### Reserva (`/reserva`):
-- [X] criar uma reserva
-- [X] buscar por reserva (`/id`)
-- [X] buscar por reservas
-- [X] buscar por reservas feitas em determinada quadra (`/quadra/quadraId`) 
-- [X] deletar reserva (`/id`)
-
-#### Funcionamento: (`/funcionamento`):
-- [X] registrar funcionamento (`/quadra_id` & `[{funcionamento}]`)
-- [X] buscar por funcionamento (`/quadra_id`)
-- [X] editar funcionamento (`{body}`)
-- [X] editar disponibilidade (`/id/atualizar-disponibilidade?disponibilidade=boolean`)
-- [X] deletar funcionamento (`/id`)
-
-#### Horarios Disponiveis: 
-- [X] buscar por horarios disponiveis para reserva (`/horarios-disponiveis/quadra/quadraId/data/2025-03-15`)
-
-#### Responsavel (`/responsavel`):
-- [X] registrar responsável
-- [X] buscar por responavel (`/cpf`)
-- [X] editar responsável (`/cpf` & `{body}`)
-- [X] deletar responsável (`/cpf`)
 
 </br>
 
