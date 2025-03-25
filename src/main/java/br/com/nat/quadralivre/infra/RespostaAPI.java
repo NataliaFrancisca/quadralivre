@@ -1,6 +1,7 @@
 package br.com.nat.quadralivre.infra;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,10 +14,15 @@ import java.util.Map;
 @Setter
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Schema(description = "Resposta padrão da API.")
 public class RespostaAPI {
+    @Schema(description = "Código de status HTTP.")
     private int statusHTTP;
+    @Schema(description = "Mensagem opcional.", nullable = true)
     private String mensagem;
+    @Schema(description = "Corpo da resposta", nullable = true)
     private Object body;
+    @Schema(description = "Mapa de erros.", nullable = true)
     private Map<String, String> erros;
 
     public static ResponseEntity<RespostaAPI> build(HttpStatus statusHTTP, String mensagem){
@@ -38,5 +44,4 @@ public class RespostaAPI {
         return ResponseEntity.status(statusHTTP).body(
                 new RespostaAPI(statusHTTP.value(), mensagem, null,  erros));
     }
-
 }
