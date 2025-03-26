@@ -1,25 +1,22 @@
 package br.com.nat.quadralivre.service.validacao;
 
-import br.com.caelum.stella.ValidationMessage;
-import br.com.caelum.stella.validation.CPFValidator;
 import br.com.nat.quadralivre.dto.GestorDTO;
-import br.com.nat.quadralivre.exceptions.CPFInvalidoException;
 import br.com.nat.quadralivre.model.Gestor;
 import br.com.nat.quadralivre.repository.GestorRepository;
-import org.hibernate.validator.internal.constraintvalidators.bv.EmailValidator;
+import br.com.nat.quadralivre.util.EmailUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import java.util.regex.Pattern;
-
 @Service
 public class ValidacaoGestor {
     final private GestorRepository gestorRepository;
+    final private EmailUtils emailUtils;
 
     @Autowired
-    public ValidacaoGestor(GestorRepository gestorRepository){
+    public ValidacaoGestor(GestorRepository gestorRepository, EmailUtils emailUtils){
         this.gestorRepository = gestorRepository;
+        this.emailUtils = emailUtils;
     }
 
     private void validarUnicidade(String campo, String valor, boolean existe){
@@ -52,11 +49,6 @@ public class ValidacaoGestor {
     }
 
     public void validarEmail(String email){
-        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
-        Pattern pattern = Pattern.compile(emailRegex);
-
-        if(!pattern.matcher(email).matches()){
-            throw new IllegalArgumentException("Digite um e-mail válido. Ex.: email@email.com");
-        }
+        this.emailUtils.validarEmail(email);
     }
 }
