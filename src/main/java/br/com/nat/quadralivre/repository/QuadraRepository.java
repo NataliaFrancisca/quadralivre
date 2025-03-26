@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface QuadraRepository extends JpaRepository<Quadra, Long> {
-    boolean existsByEndereco(Endereco endereco);
     boolean existsByTitulo(String titulo);
     boolean existsByGestorId(Long id);
+    boolean existsByTituloAndEndereco(String titulo, Endereco endereco);
     List<Quadra> findAllByGestorEmail(String email);
 }
