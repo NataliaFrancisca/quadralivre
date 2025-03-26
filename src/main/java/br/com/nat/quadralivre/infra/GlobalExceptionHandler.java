@@ -24,8 +24,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<RespostaAPI> handleJsonParseException(JsonMappingException ex) {
         String mensagemErro = "O JSON enviado está malformado. Verifique a sintaxe e tente novamente.";
 
-        if(ex instanceof UnrecognizedPropertyException){
+        if (ex instanceof UnrecognizedPropertyException) {
             mensagemErro = "O JSON está malformado. Verifique a sintaxe (faltando vírgulas ou chaves).";
+        } else if (ex.getOriginalMessage().contains("br.com.nat.quadralivre.enums.Estados")) {
+            mensagemErro = "O campo 'estado' é inválido. Digite um estado válido no formato de sigla, como 'SP' ou 'RJ'.";
         }
 
         return RespostaAPI.build(HttpStatus.BAD_REQUEST, mensagemErro);
