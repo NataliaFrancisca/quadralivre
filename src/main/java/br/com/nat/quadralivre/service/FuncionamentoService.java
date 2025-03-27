@@ -1,10 +1,13 @@
 package br.com.nat.quadralivre.service;
 
+import br.com.nat.quadralivre.dto.FuncionamentoCompletoDTO;
 import br.com.nat.quadralivre.dto.FuncionamentoDTO;
 import br.com.nat.quadralivre.dto.FuncionamentoQuadraDTO;
 import br.com.nat.quadralivre.enums.DiaSemana;
 import br.com.nat.quadralivre.helper.ReservaHelper;
+import br.com.nat.quadralivre.mapper.FuncionamentoMapper;
 import br.com.nat.quadralivre.model.Funcionamento;
+import br.com.nat.quadralivre.model.Quadra;
 import br.com.nat.quadralivre.model.Reserva;
 import br.com.nat.quadralivre.repository.FuncionamentoRepository;
 import br.com.nat.quadralivre.repository.QuadraRepository;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class FuncionamentoService {
@@ -25,6 +29,7 @@ public class FuncionamentoService {
     final private FuncionamentoFinderService funcionamentoFinderService;
     final private ReservaRepository reservaRepository;
     final private ReservaHelper reservaHelper;
+    final private FuncionamentoMapper funcionamentoMapper;
 
     @Autowired
     public FuncionamentoService(
@@ -32,63 +37,70 @@ public class FuncionamentoService {
             QuadraRepository quadraRepository,
             FuncionamentoFinderService funcionamentoFinderService,
             ReservaRepository reservaRepository,
-            ReservaHelper reservaHelper
+            ReservaHelper reservaHelper,
+            FuncionamentoMapper funcionamentoMapper
             ){
         this.funcionamentoRepository = funcionamentoRepository;
         this.quadraRepository = quadraRepository;
         this.funcionamentoFinderService = funcionamentoFinderService;
         this.reservaRepository = reservaRepository;
         this.reservaHelper = reservaHelper;
+        this.funcionamentoMapper = funcionamentoMapper;
     }
 
-    private void validarQuadra(Long quadraId){
-        this.quadraRepository.findById(quadraId).orElseThrow(() -> new EntityNotFoundException("Não existe quadra com esse número de ID"));
-    }
-
-    private Funcionamento converterParaEntidade(Long quadraId, FuncionamentoDTO funcionamentoDTO){
-        return new Funcionamento(quadraId, funcionamentoDTO.getDiaSemana(), funcionamentoDTO.getAbertura(), funcionamentoDTO.getFechamento());
+    private Quadra validarQuadra(Long quadraId){
+        return this.quadraRepository.findById(quadraId).orElseThrow(() -> new EntityNotFoundException("Não existe quadra com esse número de ID."));
     }
 
     private void verificarConflitosComReservas(Funcionamento funcionamento){
         DayOfWeek diaDaSemana = DiaSemanaUtils.transfromaDiaSemanaEmIngles(funcionamento.getDiaSemana());
 
         List<Reserva> reservas = this.reservaRepository.findAllByQuadraIdAndData(
-                funcionamento.getQuadra_id(),
+                funcionamento.getQuadra().getId(),
                 this.reservaHelper.encontrarProximaData(diaDaSemana)
         );
 
         if(!reservas.isEmpty()){
             reservas.forEach(d -> {
                 if(d.getHorarioInicio().isAfter(funcionamento.getFechamento()) || d.getHorarioInicio().isBefore(funcionamento.getAbertura())){
-                    throw new IllegalArgumentException("Essa atualização atinge reservas que já foram realizadas.");
+                    throw new IllegalArgumentException("Essa atualização atinge reservas que já foram realizadas. Por isso não podemos realizar essa atualização.");
                 }
             });
         }
     }
 
-    public FuncionamentoQuadraDTO create(Long quadraId, List<FuncionamentoDTO> funcionamentoDTOS){
-        this.validarQuadra(quadraId);
+    private List<Funcionamento> obterDiasNaoCadastrados(FuncionamentoQuadraDTO funcionamentoQuadraDTO){
+        List<DiaSemana> diasDaSemanaJaCadastrados = this.funcionamentoFinderService.buscarPelosDiasCadastrados(funcionamentoQuadraDTO.getQuadraId());
 
-        List<DiaSemana> diasCadastrados = this.funcionamentoFinderService.buscarPelosDiasCadastrados(quadraId);
-
-        List<Funcionamento> listaFuncionamentoQuadraNaSemana = funcionamentoDTOS
+        List<Funcionamento> diasDaSemanaNaoCadastrados = funcionamentoQuadraDTO.getFuncionamento()
                 .stream()
-                .filter(dto -> !diasCadastrados.contains(dto.getDiaSemana()))
-                .map(dto -> this.converterParaEntidade(quadraId, dto))
+                .filter(dto -> !diasDaSemanaJaCadastrados.contains(dto.getDiaSemana()))
+                .map(this.funcionamentoMapper::toFuncionamentoEntidade)
                 .toList();
 
-        if(listaFuncionamentoQuadraNaSemana.isEmpty()){
+        if(diasDaSemanaNaoCadastrados.isEmpty()){
             throw new IllegalStateException("Nenhum valor foi adicionado. Dias da semana que já existem são ignorados.");
         }
 
-        List<Funcionamento> listaFuncionamentoQuadraNaSemanaSalvo = this.funcionamentoRepository.saveAll(listaFuncionamentoQuadraNaSemana);
+        return diasDaSemanaNaoCadastrados;
+    }
 
-        List<FuncionamentoDTO> listaFuncionamentoQuadraNaSemanaDTO = listaFuncionamentoQuadraNaSemanaSalvo
+    public FuncionamentoQuadraDTO create(FuncionamentoQuadraDTO funcionamentoQuadraDTO){
+        Quadra quadra = this.validarQuadra(funcionamentoQuadraDTO.getQuadraId());
+
+        List<Funcionamento> diasDaSemanaCadastrados = this.obterDiasNaoCadastrados(funcionamentoQuadraDTO)
                 .stream()
-                .map(FuncionamentoDTO::fromEntity)
+                .peek(dto -> this.funcionamentoMapper.toEntidadeComQuadraId(dto, quadra))
+                .collect(Collectors.toList());
+
+        this.funcionamentoRepository.saveAll(diasDaSemanaCadastrados);
+
+        List<FuncionamentoDTO> funcionamentoQuadra = diasDaSemanaCadastrados
+                .stream()
+                .map(this.funcionamentoMapper::toDTOCompleto)
                 .toList();
 
-        return new FuncionamentoQuadraDTO(quadraId, listaFuncionamentoQuadraNaSemanaDTO);
+        return new FuncionamentoQuadraDTO(funcionamentoQuadraDTO.getQuadraId(), funcionamentoQuadra);
     }
 
     public FuncionamentoQuadraDTO get(Long quadraId){
@@ -96,7 +108,7 @@ public class FuncionamentoService {
 
         List<FuncionamentoDTO> listaFuncionamentoQuadraNaSemanaDTO = this.funcionamentoRepository.findAllByQuadraIdOrderByDiaSemana(quadraId)
                 .stream()
-                .map(FuncionamentoDTO::fromEntity)
+                .map(this.funcionamentoMapper::toDTOCompleto)
                 .toList();
 
         if(listaFuncionamentoQuadraNaSemanaDTO.isEmpty()){
@@ -106,7 +118,7 @@ public class FuncionamentoService {
         return new FuncionamentoQuadraDTO(quadraId, listaFuncionamentoQuadraNaSemanaDTO);
     }
 
-    public FuncionamentoDTO update(FuncionamentoDTO funcionamentoDTO){
+    public FuncionamentoDTO update(FuncionamentoCompletoDTO funcionamentoDTO){
         Funcionamento funcionamento = this.funcionamentoFinderService.buscarPeloFuncionamento(funcionamentoDTO.getDiaSemana(), funcionamentoDTO.getQuadraId());
 
         this.verificarConflitosComReservas(funcionamento);
@@ -116,25 +128,20 @@ public class FuncionamentoService {
 
         Funcionamento funcionamentoAtualizado = this.funcionamentoRepository.save(funcionamento);
 
-        return FuncionamentoDTO.fromEntity(funcionamentoAtualizado);
+        return this.funcionamentoMapper.toDTOCompleto(funcionamentoAtualizado);
     }
 
-    public FuncionamentoDTO updateDisponibilidade(Long quadraId, String diaSemana){
-        DiaSemana diaSemanaComoEnum = DiaSemana.valueOf(diaSemana);
-        Funcionamento funcionamento = this.funcionamentoFinderService.buscarPeloFuncionamento(diaSemanaComoEnum, quadraId);
+    public FuncionamentoDTO updateDisponibilidade(Long quadraId, DiaSemana diaSemana){
+        Funcionamento funcionamento = this.funcionamentoFinderService.buscarPeloFuncionamento(diaSemana, quadraId);
 
         this.verificarConflitosComReservas(funcionamento);
-
         funcionamento.setDisponibilidade(!funcionamento.getDisponibilidade());
 
-        Funcionamento funcionamentoAtualizado = this.funcionamentoRepository.save(funcionamento);
-        return FuncionamentoDTO.fromEntity(funcionamentoAtualizado);
+        return this.funcionamentoMapper.toDTOCompleto(this.funcionamentoRepository.save(funcionamento));
     }
 
-    public void delete(Long quadraId, String diaSemana){
-        DiaSemana diaSemanaComoEnum = DiaSemana.valueOf(diaSemana);
-        Funcionamento funcionamento = this.funcionamentoFinderService.buscarPeloFuncionamento(diaSemanaComoEnum, quadraId);
-
+    public void delete(Long quadraId, DiaSemana diaSemana){
+        Funcionamento funcionamento = this.funcionamentoFinderService.buscarPeloFuncionamento(diaSemana, quadraId);
         this.verificarConflitosComReservas(funcionamento);
         this.funcionamentoRepository.delete(funcionamento);
     }
