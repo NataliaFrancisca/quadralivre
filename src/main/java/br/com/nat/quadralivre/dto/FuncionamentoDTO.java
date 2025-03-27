@@ -36,18 +36,4 @@ public class FuncionamentoDTO {
 
     @Hidden
     private boolean disponibilidade = true;
-
-    @NotNull(message = "Id da quadra é obrigatório")
-    private Long quadraId;
-
-    public static FuncionamentoDTO fromEntity(Funcionamento funcionamento){
-        FuncionamentoDTO funcionamentoDTO = new FuncionamentoDTO();
-
-        funcionamentoDTO.setDiaSemana(funcionamento.getDiaSemana());
-        funcionamentoDTO.setAbertura(funcionamento.getAbertura());
-        funcionamentoDTO.setFechamento(funcionamento.getFechamento());
-        funcionamentoDTO.setDisponibilidade(funcionamento.getDisponibilidade());
-
-        return funcionamentoDTO;
-    }
 }
