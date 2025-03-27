@@ -11,11 +11,11 @@ import java.util.Optional;
 public interface FuncionamentoRepository extends JpaRepository<Funcionamento, Long> {
     Optional<Funcionamento> findByQuadraIdAndDiaSemana(Long quadraId, DiaSemana diaSemana);
 
-    List<Funcionamento> findAllByQuadraId(Long quadraId);
+    List<Funcionamento> findAllByQuadra_Id(Long quadraId);
     @Query(value = """
            SELECT f
            FROM Funcionamento f
-           WHERE f.quadra_id = :quadraId
+           WHERE f.quadra.id = :quadraId
            ORDER BY
                 CASE
                     WHEN f.diaSemana = 'SEGUNDA' THEN 1
