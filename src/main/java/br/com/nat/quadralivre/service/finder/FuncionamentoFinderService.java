@@ -16,11 +16,11 @@ public class FuncionamentoFinderService {
 
     public Funcionamento buscarPeloFuncionamento(DiaSemana diaSemana, Long quadraId){
         return this.funcionamentoRepository.findByQuadraIdAndDiaSemana(quadraId, diaSemana)
-                .orElseThrow(() -> new EntityNotFoundException("Não existe cadastro de funcionamento para esse dia da semana."));
+                .orElseThrow(() -> new EntityNotFoundException("Não existe horário de funcionamento para esse dia da semana."));
     }
 
     public List<DiaSemana> buscarPelosDiasCadastrados(Long quadraId){
-        return this.funcionamentoRepository.findAllByQuadraId(quadraId)
+        return this.funcionamentoRepository.findAllByQuadra_Id(quadraId)
                 .stream()
                 .map(Funcionamento::getDiaSemana)
                 .toList();
