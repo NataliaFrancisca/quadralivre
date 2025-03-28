@@ -13,11 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+
+import java.time.LocalDateTime;
 import java.time.LocalTime;
-
-import java.util.List;
-import java.util.Map;
-
+import java.util.*;
 
 @Service
 public class HorarioDisponivelService {
@@ -34,10 +33,8 @@ public class HorarioDisponivelService {
         this.quadraRepository = quadraRepository;
     }
 
-    private Funcionamento buscarPeloFuncionamentoDaQuadra(Long quadraId, LocalDate dataSolicitada){
-        this.quadraRepository.findById(quadraId).orElseThrow(() -> new EntityNotFoundException("Não existe quadra cadastrada com esse número de ID."));
-
-        DiaSemana diaSemana = DiaSemanaUtils.transformaDiaSemanaEmPortugues(dataSolicitada.getDayOfWeek().toString());
+    private Funcionamento buscarHorarioDeFuncionamentoQuadra(Long quadraId, LocalDate dataSolicitada){
+        DiaSemana diaSemana = DiaSemana.from(dataSolicitada);
 
         Funcionamento funcionamento = this.funcionamentoRepository.findByQuadraIdAndDiaSemana(quadraId, diaSemana)
                 .orElseThrow(() -> new EntityNotFoundException("Não encontramos horário de funcionamento para o dia da semana escolhido."));
@@ -49,46 +46,71 @@ public class HorarioDisponivelService {
         return funcionamento;
     }
 
-    private Map<Integer, HorarioDisponivel> gerarHorariosLivresParaReserva(Funcionamento funcionamento, LocalDate dataSolicitada, List<Reserva> reservas){
-        Map<Integer, HorarioDisponivel> horarios = this.geradorDeHorarios.gerarHorarios(funcionamento, dataSolicitada);
+    private List<Reserva> buscarPelasReservasJaFeitas(Long quadraId, LocalDate dataSolicitada){
+        LocalDateTime inicioData = dataSolicitada.atStartOfDay();
+        LocalDateTime fimData = dataSolicitada.atTime(23, 59, 59);
+
+        return this.reservaRepository.findByQuadraIdAndDataBetween(
+                quadraId,
+                inicioData,
+                fimData
+        );
+    }
+
+    private boolean temConflitoDeHorario(HorarioDisponivel horarioDisponivel, List<Reserva> reservas){
+        LocalTime horarioInicio = horarioDisponivel.getHorarioInicio();
+        LocalTime horarioFim = horarioDisponivel.getHorarioEncerramento();
+
+        return reservas.stream().anyMatch(reserva ->
+                (horarioInicio.isBefore(reserva.getHorarioEncerramento().minusMinutes(this.geradorDeHorarios.MINUTOS_PARA_INTERVALO))
+                        && horarioFim.isAfter(reserva.getHorarioInicio().minusMinutes(this.geradorDeHorarios.MINUTOS_PARA_INTERVALO)))
+        );
+    }
+
+    private void removerHorariosReservados(Queue<HorarioDisponivel> horarios, Long quadraId, LocalDate dataSolicitada){
+        List<Reserva> reservas = this.buscarPelasReservasJaFeitas(quadraId, dataSolicitada);
+
+        if(reservas.isEmpty()){
+            return;
+        }
+
+        horarios.removeIf(entry -> this.temConflitoDeHorario(entry, reservas));
+    }
+
+    private void removerHorariosQueJaPassaram(Queue<HorarioDisponivel> horarios, LocalDate dataSolicitada){
+        LocalDateTime dataAtual = LocalDateTime.now();
+        DiaSemana diaSemanaAtual = DiaSemanaUtils.transformaDiaSemanaEmPortugues(dataAtual.getDayOfWeek().toString());
+        DiaSemana diaSemanaPedido = DiaSemanaUtils.transformaDiaSemanaEmPortugues(dataSolicitada.getDayOfWeek().toString());
+
+        if(diaSemanaAtual.equals(diaSemanaPedido)){
+            horarios.removeIf(entry -> entry.getHorarioInicio().isBefore(LocalTime.now()));
+        }
+    }
+
+    private Queue<HorarioDisponivel> gerarHorariosParaReserva(Long quadraId, LocalDate dataSolicitada){
+        Funcionamento funcionamento = this.buscarHorarioDeFuncionamentoQuadra(quadraId, dataSolicitada);
+
+        Queue<HorarioDisponivel> horarios = this.geradorDeHorarios.gerarHorarios(funcionamento, dataSolicitada);
+
+        this.removerHorariosReservados(horarios, quadraId, dataSolicitada);
+        this.removerHorariosQueJaPassaram(horarios, dataSolicitada);
 
         if(horarios.isEmpty()){
             throw new IllegalStateException("Não há horários disponíveis para reserva no dia solicitado.");
         }
 
-        if(!reservas.isEmpty()){
-            horarios.entrySet().removeIf(entry -> {
-                LocalTime horarioInicio = entry.getValue().getHorarioInicio();
-                LocalTime horarioFim = entry.getValue().getHorarioEncerramento();
-
-                return reservas.stream().anyMatch(reserva ->
-                        (horarioInicio.isBefore(reserva.getHorarioEncerramento().minusMinutes(this.geradorDeHorarios.MINUTOS_PARA_INTERVALO))
-                                && horarioFim.isAfter(reserva.getHorarioInicio().minusMinutes(this.geradorDeHorarios.MINUTOS_PARA_INTERVALO)))
-                );
-            });
-        }
-
         return horarios;
     }
 
-    private List<Reserva> buscarPelasReservasJaFeitas(Long quadraId, LocalDate dataSolicitada){
-        return this.reservaRepository.findByQuadraIdAndDataBetween(
-                quadraId,
-                dataSolicitada.atStartOfDay(),
-                dataSolicitada.atTime(23, 59, 59)
-        );
-    }
-
-    public Map<Integer, HorarioDisponivel> buscarHorariosDisponiveis(Long quadraId, LocalDate dataSolicitada){
+    public Queue<HorarioDisponivel>get(Long quadraId, LocalDate dataSolicitada){
         if(dataSolicitada.isBefore(LocalDate.now())){
             throw new IllegalArgumentException("Reservas só podem ser feitas em datas no futuro.");
         }
 
-        Funcionamento funcionamento = this.buscarPeloFuncionamentoDaQuadra(quadraId, dataSolicitada);
+        this.quadraRepository.findById(quadraId)
+                .orElseThrow(() -> new EntityNotFoundException("Não existe quadra cadastrada com esse número de ID."));
 
-        List<Reserva> reservas = this.buscarPelasReservasJaFeitas(quadraId, dataSolicitada);
-
-        return this.gerarHorariosLivresParaReserva(funcionamento, dataSolicitada, reservas);
+        return this.gerarHorariosParaReserva(quadraId, dataSolicitada);
     }
 
 }
