@@ -63,7 +63,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<RespostaAPI> lidarComErrosDeTiposDiferentes(MethodArgumentTypeMismatchException ex){
-        String mensagemErro = "O parâmetro deve ser um valor válido.";
+        String mensagemErro = "O parâmetro '"+ ex.getName() + "' deve ser um valor válido.";
 
         if (ex.getRequiredType() != null) {
             String tipoEsperado = ex.getRequiredType().getSimpleName();
