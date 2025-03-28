@@ -7,51 +7,55 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class GeradorDeHorarios {
-    private final int HORAS_PARA_RESERVA_LONGA = 120;
+    private final int MINUTOS_PARA_RESERVA_LONGA = 120;
     public final int MINUTOS_PARA_INTERVALO = 10;
 
-    private HorarioDisponivel criarEntidadeParaHorarioDisponivel(LocalDateTime horarioAgendamento, long horasParaReserva){
-        return new HorarioDisponivel(horarioAgendamento.toLocalTime(), horarioAgendamento.toLocalTime().plusMinutes(horasParaReserva));
-    }
-
     private int gerarHash(String horarioAbertura){
-        String conjunto = horarioAbertura.concat(String.valueOf(this.HORAS_PARA_RESERVA_LONGA));
+        String conjunto = horarioAbertura.concat(String.valueOf(this.MINUTOS_PARA_RESERVA_LONGA));
         return Math.abs(conjunto.hashCode());
     }
 
-    public Map<Integer, HorarioDisponivel> gerarHorarios(Funcionamento funcionamento, LocalDate dataSolicitada){
+    public Queue<HorarioDisponivel> gerarHorarios(Funcionamento funcionamento, LocalDate dataSolicitada){
         final int HORAS_PARA_RESERVA_CURTA = 60;
 
-        Map<Integer, HorarioDisponivel> horariosParaReserva = new LinkedHashMap<>();
+        Comparator<HorarioDisponivel> comparatorDePrioridadeEChegada =
+                Comparator.comparing(HorarioDisponivel::getHorarioInicio)
+                        .thenComparing(HorarioDisponivel::getHorarioInicio);
 
-        LocalDateTime horarioAbertura = LocalDateTime.of(dataSolicitada, funcionamento.getAbertura());
+        Queue<HorarioDisponivel> horariosParaReserva = new PriorityQueue<>(comparatorDePrioridadeEChegada);
+
+        LocalDateTime horarioAbertura =  LocalDateTime.of(dataSolicitada, funcionamento.getAbertura());
         LocalDateTime horarioEncerramento = LocalDateTime.of(dataSolicitada, funcionamento.getFechamento());
         LocalDateTime horarioAgendamento = horarioAbertura;
 
-        while(horarioAgendamento.plusMinutes(this.HORAS_PARA_RESERVA_LONGA).isBefore(horarioEncerramento)){
-            horariosParaReserva.put(
-                    gerarHash(horarioAgendamento.toString()),
-                    this.criarEntidadeParaHorarioDisponivel(horarioAgendamento, this.HORAS_PARA_RESERVA_LONGA)
-            );
+        while(horarioAgendamento.plusMinutes(this.MINUTOS_PARA_RESERVA_LONGA).isBefore(horarioEncerramento)){
+            HorarioDisponivel horarioDisponivel = new HorarioDisponivel();
 
-            horarioAgendamento = horarioAgendamento.plusMinutes(this.HORAS_PARA_RESERVA_LONGA).plusMinutes(this.MINUTOS_PARA_INTERVALO);
+            horarioDisponivel.setId(gerarHash(horarioAgendamento.toString()));
+            horarioDisponivel.setHorarioInicio(horarioAgendamento.toLocalTime());
+            horarioDisponivel.setHorarioEncerramento(horarioAgendamento.toLocalTime().plusMinutes(this.MINUTOS_PARA_RESERVA_LONGA));
+
+            horariosParaReserva.add(horarioDisponivel);
+
+            horarioAgendamento = horarioAgendamento.plusMinutes(this.MINUTOS_PARA_RESERVA_LONGA).plusMinutes(this.MINUTOS_PARA_INTERVALO);
         }
 
-        if (!horarioAgendamento.plusMinutes(HORAS_PARA_RESERVA_CURTA).isAfter(horarioEncerramento)) {
+        if (horarioAgendamento.plusMinutes(HORAS_PARA_RESERVA_CURTA).isBefore(horarioEncerramento)) {
             long diferencaEmMinutos = horarioAgendamento.until(horarioEncerramento, ChronoUnit.MINUTES) - this.MINUTOS_PARA_INTERVALO;
 
-            horariosParaReserva.put(
-                    gerarHash(horarioAgendamento.toString()),
-                    this.criarEntidadeParaHorarioDisponivel(horarioAgendamento, diferencaEmMinutos)
-            );
+            HorarioDisponivel horarioDisponivel = new HorarioDisponivel();
+
+            horarioDisponivel.setId(gerarHash(horarioAgendamento.toString()));
+            horarioDisponivel.setHorarioInicio(horarioAgendamento.toLocalTime());
+            horarioDisponivel.setHorarioEncerramento(horarioAgendamento.toLocalTime().plusMinutes(diferencaEmMinutos));
+
+            horariosParaReserva.add(horarioDisponivel);
         }
 
         return horariosParaReserva;
     }
-
 }

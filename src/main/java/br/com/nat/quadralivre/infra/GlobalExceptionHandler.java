@@ -10,9 +10,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +30,8 @@ public class GlobalExceptionHandler {
             mensagemErro = "O JSON está malformado. Verifique a sintaxe (faltando vírgulas ou chaves).";
         } else if (ex.getOriginalMessage().contains("br.com.nat.quadralivre.enums.Estados")) {
             mensagemErro = "O campo 'estado' é inválido. Digite um estado válido no formato de sigla, como 'SP' ou 'RJ'.";
+        } else if (ex.getOriginalMessage().contains("br.com.nat.quadralivre.enums.DiaSemana")){
+            mensagemErro = "O campo 'diaSemana' é inválido. Digite um dia da semana válido no seguinte formato, como 'SEGUNDA' OU 'SEXTA'";
         }
 
         return RespostaAPI.build(HttpStatus.BAD_REQUEST, mensagemErro);
@@ -55,6 +59,33 @@ public class GlobalExceptionHandler {
         }
 
         return RespostaAPI.build(HttpStatus.BAD_REQUEST, "Ocorreu um erro na requisição", erros);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<RespostaAPI> lidarComErrosDeTiposDiferentes(MethodArgumentTypeMismatchException ex){
+        String mensagemErro = "O parâmetro '"+ ex.getName() + "' deve ser um valor válido.";
+
+        if (ex.getRequiredType() != null) {
+            String tipoEsperado = ex.getRequiredType().getSimpleName();
+
+            if(tipoEsperado.equals("Long")){
+                mensagemErro = "O parâmetro é inválido. Digite um número válido, ex.: 1 ou 34";
+                if( ex.getName().equals("quadraId")){
+                    mensagemErro = "O parâmetro '" + ex.getName() + "' é inválido. Digite um número válido.";
+                }
+            }
+
+            if (tipoEsperado.equals("DiaSemana")) {
+                mensagemErro = "O parâmetro 'diaSemana' é inválido. Digite um dia da semana válido, como: SEGUNDA ou TERCA";
+            }
+        }
+        return RespostaAPI.build(HttpStatus.BAD_REQUEST, mensagemErro);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<RespostaAPI> lidarComFaltaDeValorNosParametros(MissingServletRequestParameterException  ex){
+        String mensagem = "O parâmetro '" + ex.getParameterName() + "' é obrigatório e não pode estar vazio.";
+        return RespostaAPI.build(HttpStatus.BAD_REQUEST, mensagem);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

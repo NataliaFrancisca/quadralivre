@@ -1,22 +1,24 @@
 package br.com.nat.quadralivre.controller;
 
+import br.com.nat.quadralivre.dto.FuncionamentoCompletoDTO;
 import br.com.nat.quadralivre.dto.FuncionamentoDTO;
-import br.com.nat.quadralivre.dto.GestorDTO;
+import br.com.nat.quadralivre.dto.FuncionamentoQuadraDTO;
+
+import br.com.nat.quadralivre.enums.DiaSemana;
+import br.com.nat.quadralivre.infra.CorpoRequisicao;
 import br.com.nat.quadralivre.infra.RespostaAPI;
+import br.com.nat.quadralivre.infra.RespostasComuns;
 import br.com.nat.quadralivre.service.FuncionamentoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/funcionamento")
@@ -29,110 +31,70 @@ public class FuncionamentoController {
         this.funcionamentoService = funcionamentoService;
     }
 
-    @Operation(
-            summary = "Cria um novo funcionamento",
-            description = "Cria horários de funcionamento para a quadra indicada",
-            responses = {
-                    @ApiResponse(responseCode = "404", description = "Não existe quadra com esse número de ID."),
-                    @ApiResponse(responseCode = "400", description = "Os dados devem ser preenchidos corretamente. Ou, nenhum valor foi adicionado, dias da semana que já existem são ignorados."),
-                    @ApiResponse(responseCode = "201", description = "Horários de funcionamento cadastrados com sucesso.")
-            }
-    )
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Objeto com as informações dos horários de funcionamento.", required = true, content = @Content(
-            mediaType = "application/json",
-            schema = @Schema(implementation = FuncionamentoDTO.class)
-    ))
+    @Operation(summary = "Define horários de funcionamento para uma quadra.", description = "Define horários de funcionamento para a quadra indicada.")
+    @CorpoRequisicao(descricao = "Objeto com as informações dos horários de funcionamento.", dto = FuncionamentoDTO.class)
+    @RespostasComuns
     @PostMapping
-    public ResponseEntity<RespostaAPI> create(
-            @Parameter(description = "Identificador da quadra", required = true)
-            @RequestParam Long quadraId,
-            @RequestBody List<FuncionamentoDTO> funcionamentoDTOS){
+    public ResponseEntity<RespostaAPI> create(@Valid @RequestBody FuncionamentoQuadraDTO funcionamentoQuadraDTO){
         return RespostaAPI.build(
                 HttpStatus.CREATED,
-                this.funcionamentoService.create(quadraId, funcionamentoDTOS)
+                this.funcionamentoService.create(funcionamentoQuadraDTO)
         );
     }
 
-    @Operation(
-            summary = "Busca pelo funcionamento de uma quadra",
-            description = "Retorna o funcionamento da quadra indicada.",
-            responses = {
-                    @ApiResponse(responseCode = "404", description = "Não existe quadra com esse número de ID."),
-                    @ApiResponse(responseCode = "200", description = "Retorna os horários de funcionamento da quadra.")
-            }
-    )
+    @Operation(summary = "Busca pelo horário de funcionamento de uma quadra", description = "Retorna o funcionamento da quadra indicada.")
+    @RespostasComuns
     @GetMapping
-    public ResponseEntity<RespostaAPI> get(
-            @Parameter(description = "Identificador da quadra", required = true)
-            @RequestParam Long quadraId){
+    public ResponseEntity<RespostaAPI> get(@Parameter(description = "Id da quadra", required = true) @Valid @NotNull @RequestParam Long quadraId){
         return RespostaAPI.build(
                 HttpStatus.OK,
                 this.funcionamentoService.get(quadraId)
         );
     }
 
-    @Operation(
-            summary = "Atualiza os dados de funcionamento.",
-            description = "Atualiza os dados de funcionamento de uma quadra.",
-            responses = {
-                    @ApiResponse(responseCode = "404", description = "Não existe quadra com esse número de ID."),
-                    @ApiResponse(responseCode = "200", description = "Dados de funcionamento da quadra atualizados com sucesso."),
-                    @ApiResponse(responseCode = "400", description = "Os dados devem ser preenchidos corretamente.")
-            }
-    )
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Objeto com as informações dos horários de funcionamento.", required = true, content = @Content(
-            mediaType = "application/json",
-            schema = @Schema(implementation = FuncionamentoDTO.class)
-    ))
+    @Operation(summary = "Atualiza os dados de funcionamento de um dia da semana.", description = "Atualiza os dados de funcionamento de uma quadra.")
+    @RespostasComuns
+    @CorpoRequisicao(descricao = "Objeto com o funcionamento atualizado.", dto = FuncionamentoCompletoDTO.class)
     @PutMapping
-    public ResponseEntity<RespostaAPI> update(@Valid @RequestBody FuncionamentoDTO funcionamentoDTO){
+    public ResponseEntity<RespostaAPI> update(@Valid @RequestBody FuncionamentoCompletoDTO funcionamentoDTO){
         return RespostaAPI.build(
                 HttpStatus.OK,
                 this.funcionamentoService.update(funcionamentoDTO)
         );
     }
 
-
-    @Operation(
-            summary = "Atualiza a disponibilidade da quadra em um dia da semana.",
-            description = "Atualiza os dados de funcionamento de uma quadra de acordo com o dia da semana indicado.",
-            responses = {
-                    @ApiResponse(responseCode = "404", description = "Não existe cadastro de funcionamento para esse dia da semana."),
-                    @ApiResponse(responseCode = "200", description = "Dados de funcionamento da quadra atualizados com sucesso."),
-                    @ApiResponse(responseCode = "400", description = "Os dados devem ser preenchidos corretamente.")
-            }
+    @Operation(summary = "Atualiza a disponibilidade da quadra em um dia da semana.",
+            description = "Atualiza os dados de funcionamento de uma quadra de acordo com o dia da semana indicado."
     )
+    @RespostasComuns
     @PatchMapping
     public ResponseEntity<RespostaAPI> updateDisponibilidade(
-            @Parameter(description = "Identificador da quadra", required = true)
+            @Parameter(description = "ID da quadra", required = true)
             @RequestParam Long quadraId,
             @Parameter(description = "Dia da semana indicado, ex.: SEGUNDA", required = true)
-            @RequestParam String diaSemana){
+            @Valid @RequestParam DiaSemana diaSemana){
         return RespostaAPI.build(
                 HttpStatus.OK,
                 this.funcionamentoService.updateDisponibilidade(quadraId, diaSemana)
         );
     }
 
-    @Operation(
-            summary = "Deleta horários de funcionamento da quadra",
-            description = "Deleta horários de funcionamento da quadra, baseado na quadra e o dia da semana.",
-            responses = {
-                    @ApiResponse(responseCode = "404", description = "Uma dos parametros não foi encontrado."),
-                    @ApiResponse(responseCode = "200", description = "Horário de funcionamento deletado com sucesso."),
-            }
+
+    @Operation(summary = "Deleta horário de funcionamento da quadra",
+            description = "Deleta horário de funcionamento da quadra, baseado na quadra e o dia da semana."
     )
+    @RespostasComuns
     @DeleteMapping
     public ResponseEntity<RespostaAPI> delete(
-            @Parameter(description = "Identificador da quadra", required = true)
+            @Parameter(description = "ID da quadra", required = true)
             @RequestParam Long quadraId,
             @Parameter(description = "Dia da semana indicado, ex.: SEGUNDA", required = true)
-            @RequestParam String diaSemana
+            @Valid @RequestParam DiaSemana diaSemana
     ){
         this.funcionamentoService.delete(quadraId, diaSemana);
         return RespostaAPI.build(
                 HttpStatus.OK,
-                "Funcionamento para o dia selecionado foi deletado com sucesso."
+                "Horário de funcionamento para o dia indicado foi deletado com sucesso."
         );
     }
 }

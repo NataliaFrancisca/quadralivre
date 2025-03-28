@@ -1,6 +1,7 @@
 package br.com.nat.quadralivre.controller;
 
 import br.com.nat.quadralivre.infra.RespostaAPI;
+import br.com.nat.quadralivre.infra.RespostasComuns;
 import br.com.nat.quadralivre.service.HorarioDisponivelService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -25,15 +26,9 @@ public class HorarioDisponivelController {
         this.horarioDisponivelService = horarioDisponivelService;
     }
 
-    @Operation(
-            summary = "Busca pelos horários disponiveis para reserva",
-            description = "Retorna uma lista com os horários disponiveis para reserva da quadra indicada.",
-            responses = {
-                    @ApiResponse(responseCode = "400", description = "Reservas só podem ser feitas em datas futuras."),
-                    @ApiResponse(responseCode = "404", description = "Não foi encontrado horário de funcionamento para a quadra indicada."),
-                    @ApiResponse(responseCode = "200", description = "Horários de reserva gerados com sucesso.")
-            }
-    )
+    @Operation(summary = "Busca pelos horários disponiveis para reserva",
+            description = "Retorna uma lista com os horários disponiveis para reserva da quadra indicada.")
+    @RespostasComuns
     @GetMapping
     public ResponseEntity<RespostaAPI> get(
             @Parameter(description = "Identificador da quadra, ex.: 1")
@@ -42,7 +37,7 @@ public class HorarioDisponivelController {
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate data){
         return RespostaAPI.build(
                 HttpStatus.OK,
-                this.horarioDisponivelService.buscarHorariosDisponiveis(quadraId, data)
+                this.horarioDisponivelService.get(quadraId, data)
         );
     }
 }

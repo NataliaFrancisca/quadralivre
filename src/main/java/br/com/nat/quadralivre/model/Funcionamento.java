@@ -32,17 +32,10 @@ public class Funcionamento {
     @Column(nullable = false)
     private Boolean disponibilidade = true;
 
-    @Column(nullable = false)
-    private Long quadra_id;
+    @Column(name = "quadra_id", nullable = false)
+    private Long quadraId;
 
     @ManyToOne
     @JoinColumn(name = "quadra_id", nullable = false, referencedColumnName = "id", insertable = false, updatable = false)
     private Quadra quadra;
-
-    public Funcionamento(Long quadra_id, DiaSemana dia_semana, LocalTime abertura, LocalTime fechamento){
-        this.setQuadra_id(quadra_id);
-        this.setDiaSemana(dia_semana);
-        this.setAbertura(abertura);
-        this.setFechamento(fechamento);
-    }
 }
