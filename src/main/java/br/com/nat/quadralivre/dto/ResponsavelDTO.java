@@ -1,6 +1,6 @@
 package br.com.nat.quadralivre.dto;
 
-import br.com.nat.quadralivre.model.Responsavel;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -16,6 +16,7 @@ import org.hibernate.validator.constraints.br.CPF;
 @AllArgsConstructor
 @NoArgsConstructor
 @Tag(name = "Responsável", description = "Operações relacionadas a responsável")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResponsavelDTO {
     @NotBlank(message = "CPF é obrigatório.")
     @CPF
@@ -31,26 +32,4 @@ public class ResponsavelDTO {
     @NotBlank(message = "Endereço de e-mail é obrigatório.")
     @Email
     private String email;
-
-    public static Responsavel toEntity(ResponsavelDTO responsavelDTO){
-        Responsavel responsavel = new Responsavel();
-
-        responsavel.setCpf(responsavelDTO.getCpf());
-        responsavel.setNome(responsavelDTO.getNome());
-        responsavel.setTelefone(responsavelDTO.getTelefone());
-        responsavel.setEmail(responsavelDTO.getEmail());
-
-        return responsavel;
-    }
-
-    public static ResponsavelDTO fromEntity(Responsavel responsavel){
-        ResponsavelDTO responsavelDTO = new ResponsavelDTO();
-
-        responsavelDTO.setCpf(responsavel.getCpf());
-        responsavelDTO.setNome(responsavel.getNome());
-        responsavelDTO.setTelefone(responsavel.getTelefone());
-        responsavelDTO.setEmail(responsavel.getEmail());
-
-        return responsavelDTO;
-    }
 }
