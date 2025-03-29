@@ -2,6 +2,7 @@ package br.com.nat.quadralivre.service;
 
 import br.com.nat.quadralivre.dto.ResponsavelDTO;
 import br.com.nat.quadralivre.dto.ResponsavelSimplesDTO;
+import br.com.nat.quadralivre.mapper.ResponsavelMapper;
 import br.com.nat.quadralivre.model.Responsavel;
 import br.com.nat.quadralivre.repository.ResponsavelRepository;
 import br.com.nat.quadralivre.service.validacao.ValidacaoResponsavel;
@@ -13,11 +14,13 @@ import org.springframework.stereotype.Service;
 public class ResponsavelService {
     private final ResponsavelRepository responsavelRepository;
     private final ValidacaoResponsavel validacaoResponsavel;
+    private final ResponsavelMapper responsavelMapper;
 
     @Autowired
-    public ResponsavelService(ResponsavelRepository responsavelRepository, ValidacaoResponsavel validacaoResponsavel){
+    public ResponsavelService(ResponsavelRepository responsavelRepository, ValidacaoResponsavel validacaoResponsavel, ResponsavelMapper responsavelMapper){
         this.responsavelRepository = responsavelRepository;
         this.validacaoResponsavel = validacaoResponsavel;
+        this.responsavelMapper = responsavelMapper;
     }
 
     private Responsavel buscaPeloResponsavel(String cpf){
@@ -29,13 +32,13 @@ public class ResponsavelService {
 
     public ResponsavelDTO create(ResponsavelDTO responsavelDTO){
         this.validacaoResponsavel.validar(responsavelDTO);
-        Responsavel responsavelParaSalvar = this.responsavelRepository.save(ResponsavelDTO.toEntity(responsavelDTO));
-        return ResponsavelDTO.fromEntity(responsavelParaSalvar);
+        Responsavel responsavelParaSalvar = this.responsavelRepository.save(this.responsavelMapper.toEntidade(responsavelDTO));
+        return this.responsavelMapper.toDTOCompleto(responsavelParaSalvar);
     }
 
     public ResponsavelDTO getByCPF(String cpf){
         Responsavel responsavel = this.buscaPeloResponsavel(cpf);
-        return ResponsavelDTO.fromEntity(responsavel);
+        return this.responsavelMapper.toDTOCompleto(responsavel);
     }
 
     public ResponsavelDTO update(String cpf, ResponsavelSimplesDTO responsavelDTO){
@@ -52,7 +55,8 @@ public class ResponsavelService {
 
         this.responsavelRepository.save(responsavelParaAtualizar);
 
-        return ResponsavelDTO.fromEntity(responsavelParaAtualizar);
+        return this.responsavelMapper.toDTOCompleto(responsavelParaAtualizar);
+
     }
 
     public void delete(String cpf){

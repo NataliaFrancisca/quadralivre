@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -44,36 +45,22 @@ public class ReservaService {
         this.quadraMapper = quadraMapper;
     }
 
-    private Reserva criarEntidadeReserva(ReservaDTO reservaDTO, HorarioDisponivel horarioReserva){
-        Reserva reserva = new Reserva();
-
-        reserva.setQuadraId(reservaDTO.getQuadraId());
-        reserva.setResponsavelCPF(reservaDTO.getResponsavelCPF());
-        reserva.setData(reservaDTO.getDataSolicitada().atTime(horarioReserva.getHorarioInicio()));
-        reserva.setHorarioInicio(horarioReserva.getHorarioInicio());
-        reserva.setHorarioEncerramento(horarioReserva.getHorarioEncerramento());
-
-        return reserva;
-    }
-
-    public ReservaCompletaDTO create(ReservaDTO reservaDTO){
+    public ReservaSimplesDTO create(ReservaDTO reservaDTO){
         this.validacaoReserva.validarReserva(reservaDTO);
 
         HorarioDisponivel horarioReserva = this.reservaFinderService.buscarHorarioReserva(reservaDTO);
-        Reserva reserva = this.criarEntidadeReserva(reservaDTO, horarioReserva);
 
-        Responsavel responsavel = this.reservaFinderService.buscarResponsavel(reserva.getResponsavelCPF());
-        Quadra quadra = this.reservaFinderService.buscarQuadra(reserva.getQuadraId());
+        Reserva reserva = this.reservaMapper.toReservaEntidade(reservaDTO, horarioReserva);
+
+        Responsavel responsavel = this.reservaFinderService.buscarResponsavel(reservaDTO.getResponsavelCPF());
+        Quadra quadra = this.reservaFinderService.buscarQuadra(reservaDTO.getQuadraId());
 
         reserva.setResponsavel(responsavel);
         reserva.setQuadra(quadra);
 
-        Reserva reservaParaSalvarNoBD = this.reservaRepository.save(reserva);
-        return this.reservaMapper.toDTOCompleto(reservaParaSalvarNoBD);
-    }
+        Reserva reservaSalva = this.reservaRepository.save(reserva);
 
-    public List<ReservaCompletaDTO> getAll(){
-        return this.reservaRepository.findAll().stream().map(this.reservaMapper::toDTOCompleto).toList();
+        return this.reservaMapper.toDTOSimples(reservaSalva);
     }
 
     public ReservaCompletaDTO getById(Long id){
@@ -87,9 +74,10 @@ public class ReservaService {
         Quadra quadra = this.quadraRepository.findById(quadraId)
                 .orElseThrow(() -> new EntityNotFoundException("Não existe quadra com esse número de ID."));
 
-        List<ReservaSimplesDTO> reservas = this.reservaRepository.findByQuadraIdOrderByData(quadraId)
+        List<ReservaSimplesDTO> reservas = this.reservaRepository.findAllByQuadraIdOrderByData(quadraId)
                 .stream()
                 .map(this.reservaMapper::toDTOSimples)
+                .filter(dto -> dto.getData().isAfter(LocalDateTime.now()))
                 .toList();
 
         if(reservas.isEmpty()){
