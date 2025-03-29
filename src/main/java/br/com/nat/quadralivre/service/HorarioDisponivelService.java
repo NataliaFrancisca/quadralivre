@@ -34,7 +34,7 @@ public class HorarioDisponivelService {
     }
 
     private Funcionamento buscarHorarioDeFuncionamentoQuadra(Long quadraId, LocalDate dataSolicitada){
-        DiaSemana diaSemana = DiaSemana.from(dataSolicitada);
+        DiaSemana diaSemana = DiaSemana.toDiaSemana(dataSolicitada);
 
         Funcionamento funcionamento = this.funcionamentoRepository.findByQuadraIdAndDiaSemana(quadraId, diaSemana)
                 .orElseThrow(() -> new EntityNotFoundException("Não encontramos horário de funcionamento para o dia da semana escolhido."));
@@ -50,7 +50,7 @@ public class HorarioDisponivelService {
         LocalDateTime inicioData = dataSolicitada.atStartOfDay();
         LocalDateTime fimData = dataSolicitada.atTime(23, 59, 59);
 
-        return this.reservaRepository.findByQuadraIdAndDataBetween(
+        return this.reservaRepository.findAllByQuadraIdAndDataBetween(
                 quadraId,
                 inicioData,
                 fimData
@@ -67,7 +67,7 @@ public class HorarioDisponivelService {
         );
     }
 
-    private void removerHorariosReservados(Queue<HorarioDisponivel> horarios, Long quadraId, LocalDate dataSolicitada){
+    private void removerHorariosReservados(List<HorarioDisponivel> horarios, Long quadraId, LocalDate dataSolicitada){
         List<Reserva> reservas = this.buscarPelasReservasJaFeitas(quadraId, dataSolicitada);
 
         if(reservas.isEmpty()){
@@ -77,7 +77,7 @@ public class HorarioDisponivelService {
         horarios.removeIf(entry -> this.temConflitoDeHorario(entry, reservas));
     }
 
-    private void removerHorariosQueJaPassaram(Queue<HorarioDisponivel> horarios, LocalDate dataSolicitada){
+    private void removerHorariosQueJaPassaram(List<HorarioDisponivel> horarios, LocalDate dataSolicitada){
         LocalDateTime dataAtual = LocalDateTime.now();
         DiaSemana diaSemanaAtual = DiaSemanaUtils.transformaDiaSemanaEmPortugues(dataAtual.getDayOfWeek().toString());
         DiaSemana diaSemanaPedido = DiaSemanaUtils.transformaDiaSemanaEmPortugues(dataSolicitada.getDayOfWeek().toString());
@@ -87,10 +87,10 @@ public class HorarioDisponivelService {
         }
     }
 
-    private Queue<HorarioDisponivel> gerarHorariosParaReserva(Long quadraId, LocalDate dataSolicitada){
+    private List<HorarioDisponivel> gerarHorariosParaReserva(Long quadraId, LocalDate dataSolicitada){
         Funcionamento funcionamento = this.buscarHorarioDeFuncionamentoQuadra(quadraId, dataSolicitada);
 
-        Queue<HorarioDisponivel> horarios = this.geradorDeHorarios.gerarHorarios(funcionamento, dataSolicitada);
+        List<HorarioDisponivel> horarios = this.geradorDeHorarios.gerarHorarios(funcionamento, dataSolicitada);
 
         this.removerHorariosReservados(horarios, quadraId, dataSolicitada);
         this.removerHorariosQueJaPassaram(horarios, dataSolicitada);
@@ -102,7 +102,7 @@ public class HorarioDisponivelService {
         return horarios;
     }
 
-    public Queue<HorarioDisponivel>get(Long quadraId, LocalDate dataSolicitada){
+    public List<HorarioDisponivel> get(Long quadraId, LocalDate dataSolicitada){
         if(dataSolicitada.isBefore(LocalDate.now())){
             throw new IllegalArgumentException("Reservas só podem ser feitas em datas no futuro.");
         }
