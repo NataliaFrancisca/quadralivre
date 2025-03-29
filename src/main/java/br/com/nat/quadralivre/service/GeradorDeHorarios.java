@@ -19,14 +19,10 @@ public class GeradorDeHorarios {
         return Math.abs(conjunto.hashCode());
     }
 
-    public Queue<HorarioDisponivel> gerarHorarios(Funcionamento funcionamento, LocalDate dataSolicitada){
+    public List<HorarioDisponivel> gerarHorarios(Funcionamento funcionamento, LocalDate dataSolicitada){
         final int HORAS_PARA_RESERVA_CURTA = 60;
 
-        Comparator<HorarioDisponivel> comparatorDePrioridadeEChegada =
-                Comparator.comparing(HorarioDisponivel::getHorarioInicio)
-                        .thenComparing(HorarioDisponivel::getHorarioInicio);
-
-        Queue<HorarioDisponivel> horariosParaReserva = new PriorityQueue<>(comparatorDePrioridadeEChegada);
+        List<HorarioDisponivel> horariosParaReserva = new ArrayList<>();
 
         LocalDateTime horarioAbertura =  LocalDateTime.of(dataSolicitada, funcionamento.getAbertura());
         LocalDateTime horarioEncerramento = LocalDateTime.of(dataSolicitada, funcionamento.getFechamento());
@@ -55,6 +51,8 @@ public class GeradorDeHorarios {
 
             horariosParaReserva.add(horarioDisponivel);
         }
+
+        horariosParaReserva.sort(Comparator.comparing(HorarioDisponivel::getHorarioInicio));
 
         return horariosParaReserva;
     }
