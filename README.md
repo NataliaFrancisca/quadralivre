@@ -140,11 +140,11 @@ spring.datasource.username=seu_usuario
 spring.datasource.password=sua_senha
 ```
 
-### 4. Rodar a Aplicação
+### 4. Rodar a aplicação
 Agora, execute o projeto com:
 ```
 mvn spring-boot:run
 ```
 
-### 5. Acessar a API
+### 5. Acessar a documentação da API.
 Para acessar a documentação, no seu navegador acesso o link: http://localhost:8080/swagger-ui/index.html#/
