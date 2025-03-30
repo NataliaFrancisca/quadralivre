@@ -44,11 +44,11 @@ public class FuncionamentoController {
 
     @Operation(summary = "Busca pelo horário de funcionamento de uma quadra", description = "Retorna o funcionamento da quadra indicada.")
     @RespostasComuns
-    @GetMapping
-    public ResponseEntity<RespostaAPI> get(@Parameter(description = "Id da quadra", required = true) @Valid @NotNull @RequestParam Long quadraId){
+    @GetMapping("/quadraId")
+    public ResponseEntity<RespostaAPI> get(@Parameter(description = "Id da quadra", required = true) @Valid @NotNull @RequestParam Long valor){
         return RespostaAPI.build(
                 HttpStatus.OK,
-                this.funcionamentoService.get(quadraId)
+                this.funcionamentoService.get(valor)
         );
     }
 
