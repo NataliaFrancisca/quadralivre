@@ -54,7 +54,12 @@ public class QuadraService {
     private void validarSeQuadraPodeSerRemovido(Long quadraId){
         LocalDateTime dataAtual = LocalDateTime.now();
 
-        List<Reserva> reservas = this.reservaRepository.findAllByQuadraIdAndData(quadraId, dataAtual);
+        List<Reserva> reservas = this.reservaRepository
+                .findAllByQuadraIdAndDataBetween(
+                        quadraId,
+                        dataAtual.toLocalDate().atStartOfDay(),
+                        dataAtual.toLocalDate().atTime(23, 59,59)
+                );
 
         if(!reservas.isEmpty()){
             throw new IllegalStateException("Esta quadra têm reservas ativas e não pode ser removido no momento.");
