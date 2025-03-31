@@ -1,5 +1,6 @@
 package br.com.nat.quadralivre.service;
 
+import br.com.nat.quadralivre.dto.FuncionamentoAtualizacaoDTO;
 import br.com.nat.quadralivre.dto.FuncionamentoCompletoDTO;
 import br.com.nat.quadralivre.dto.FuncionamentoDTO;
 import br.com.nat.quadralivre.dto.FuncionamentoQuadraDTO;
@@ -52,13 +53,26 @@ public class FuncionamentoService {
         return this.quadraRepository.findById(quadraId).orElseThrow(() -> new EntityNotFoundException("Não existe quadra com esse número de ID."));
     }
 
-    private void verificarConflitosComReservas(Funcionamento funcionamento){
+    private List<Reserva> buscarReservasParaDiaSemana(Funcionamento funcionamento){
         DayOfWeek diaDaSemana = DiaSemanaUtils.transfromaDiaSemanaEmIngles(funcionamento.getDiaSemana());
 
-        List<Reserva> reservas = this.reservaRepository.findAllByQuadraIdAndData(
+        return this.reservaRepository.findAllByQuadraIdAndDataBetween(
                 funcionamento.getQuadra().getId(),
-                this.reservaHelper.encontrarProximaData(diaDaSemana)
+                this.reservaHelper.encontrarProximaData(diaDaSemana).toLocalDate().atStartOfDay(),
+                this.reservaHelper.encontrarProximaData(diaDaSemana).toLocalDate().atTime(23, 59, 59)
         );
+    }
+
+    private void verificarExisteReservasNoDiaIndicado(Funcionamento funcionamento){
+        List<Reserva> reservas = this.buscarReservasParaDiaSemana(funcionamento);
+
+        if(!reservas.isEmpty()){
+            throw new IllegalArgumentException("Essa atualização atinge reservas que já foram realizadas. Por isso não podemos realizar essa atualização.");
+        }
+    }
+
+    private void verificarConflitosComReservas(Funcionamento funcionamento){
+        List<Reserva> reservas = this.buscarReservasParaDiaSemana(funcionamento);
 
         if(!reservas.isEmpty()){
             reservas.forEach(d -> {
@@ -131,17 +145,18 @@ public class FuncionamentoService {
         return this.funcionamentoMapper.toDTOCompleto(funcionamentoAtualizado);
     }
 
-    public FuncionamentoDTO updateDisponibilidade(Long quadraId, DiaSemana diaSemana){
-        Funcionamento funcionamento = this.funcionamentoFinderService.buscarPeloFuncionamento(diaSemana, quadraId);
+    public FuncionamentoDTO updateDisponibilidade(FuncionamentoAtualizacaoDTO funcionamentoAtualizacaoDTO){
+        Funcionamento funcionamento = this.funcionamentoFinderService
+                .buscarPeloFuncionamento(funcionamentoAtualizacaoDTO.getDiaSemana(), funcionamentoAtualizacaoDTO.getQuadraId());
 
-        this.verificarConflitosComReservas(funcionamento);
+        this.verificarExisteReservasNoDiaIndicado(funcionamento);
         funcionamento.setDisponibilidade(!funcionamento.getDisponibilidade());
 
         return this.funcionamentoMapper.toDTOCompleto(this.funcionamentoRepository.save(funcionamento));
     }
 
-    public void delete(Long quadraId, DiaSemana diaSemana){
-        Funcionamento funcionamento = this.funcionamentoFinderService.buscarPeloFuncionamento(diaSemana, quadraId);
+    public void delete(FuncionamentoAtualizacaoDTO funcionamentoAtualizacaoDTO){
+        Funcionamento funcionamento = this.funcionamentoFinderService.buscarPeloFuncionamento(funcionamentoAtualizacaoDTO.getDiaSemana(), funcionamentoAtualizacaoDTO.getQuadraId());
         this.verificarConflitosComReservas(funcionamento);
         this.funcionamentoRepository.delete(funcionamento);
     }
