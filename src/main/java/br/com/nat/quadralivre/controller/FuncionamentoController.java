@@ -1,5 +1,6 @@
 package br.com.nat.quadralivre.controller;
 
+import br.com.nat.quadralivre.dto.FuncionamentoAtualizacaoDTO;
 import br.com.nat.quadralivre.dto.FuncionamentoCompletoDTO;
 import br.com.nat.quadralivre.dto.FuncionamentoDTO;
 import br.com.nat.quadralivre.dto.FuncionamentoQuadraDTO;
@@ -44,7 +45,7 @@ public class FuncionamentoController {
 
     @Operation(summary = "Busca pelo horário de funcionamento de uma quadra", description = "Retorna o funcionamento da quadra indicada.")
     @RespostasComuns
-    @GetMapping("/quadraId")
+    @GetMapping("/quadra")
     public ResponseEntity<RespostaAPI> get(@Parameter(description = "Id da quadra", required = true) @Valid @NotNull @RequestParam Long valor){
         return RespostaAPI.build(
                 HttpStatus.OK,
@@ -67,15 +68,12 @@ public class FuncionamentoController {
             description = "Atualiza os dados de funcionamento de uma quadra de acordo com o dia da semana indicado."
     )
     @RespostasComuns
+    @CorpoRequisicao(descricao = "Objeto com os dados de básico de funcionamento.", dto = FuncionamentoAtualizacaoDTO.class)
     @PatchMapping
-    public ResponseEntity<RespostaAPI> updateDisponibilidade(
-            @Parameter(description = "ID da quadra", required = true)
-            @RequestParam Long quadraId,
-            @Parameter(description = "Dia da semana indicado, ex.: SEGUNDA", required = true)
-            @Valid @RequestParam DiaSemana diaSemana){
+    public ResponseEntity<RespostaAPI> updateDisponibilidade(@Valid @RequestBody FuncionamentoAtualizacaoDTO funcionamentoAtualizacaoDTO){
         return RespostaAPI.build(
                 HttpStatus.OK,
-                this.funcionamentoService.updateDisponibilidade(quadraId, diaSemana)
+                this.funcionamentoService.updateDisponibilidade(funcionamentoAtualizacaoDTO)
         );
     }
 
@@ -84,14 +82,10 @@ public class FuncionamentoController {
             description = "Deleta horário de funcionamento da quadra, baseado na quadra e o dia da semana."
     )
     @RespostasComuns
+    @CorpoRequisicao(descricao = "Objeto com os dados de básico de funcionamento.", dto = FuncionamentoAtualizacaoDTO.class)
     @DeleteMapping
-    public ResponseEntity<RespostaAPI> delete(
-            @Parameter(description = "ID da quadra", required = true)
-            @RequestParam Long quadraId,
-            @Parameter(description = "Dia da semana indicado, ex.: SEGUNDA", required = true)
-            @Valid @RequestParam DiaSemana diaSemana
-    ){
-        this.funcionamentoService.delete(quadraId, diaSemana);
+    public ResponseEntity<RespostaAPI> delete(@Valid @RequestBody FuncionamentoAtualizacaoDTO funcionamentoAtualizacaoDTO){
+        this.funcionamentoService.delete(funcionamentoAtualizacaoDTO);
         return RespostaAPI.build(
                 HttpStatus.OK,
                 "Horário de funcionamento para o dia indicado foi deletado com sucesso."
