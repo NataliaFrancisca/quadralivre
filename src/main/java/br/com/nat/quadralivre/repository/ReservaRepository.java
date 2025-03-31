@@ -8,6 +8,5 @@ import java.util.List;
 
 public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     List<Reserva> findAllByQuadraIdAndDataBetween(Long quadraId, LocalDateTime dataInicio, LocalDateTime dataFim);
-    List<Reserva> findAllByQuadraIdAndData(Long quadraId, LocalDateTime data);
     List<Reserva> findAllByQuadraIdOrderByData(Long quadraId);
 }
