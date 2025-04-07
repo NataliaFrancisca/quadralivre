@@ -1,6 +1,6 @@
-# 🤾🏽‍♀️❇️ QUADRA FÁCIL
+# 🤾🏽‍♀️❇️ QUADRA LIVRE.
 
-**Quadra Fácil** é uma `API` desenvolvida para simplificar a reserva de quadras esportivas. Com ela, os responsáveis pelos espaços podem cadastrar suas quadras e gerar automaticamente horários de reserva para diferentes dias da semana.
+**Quadra Livre** é uma `API` desenvolvida para simplificar a reserva de quadras esportivas. Com ela, os responsáveis pelos espaços podem cadastrar suas quadras e gerar automaticamente horários de reserva para diferentes dias da semana.
 
 ## 📦 Stack:
 - Java 
