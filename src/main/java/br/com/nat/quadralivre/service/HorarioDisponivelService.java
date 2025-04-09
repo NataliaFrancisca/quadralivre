@@ -1,5 +1,6 @@
 package br.com.nat.quadralivre.service;
 
+import br.com.nat.quadralivre.dto.HorarioDisponivelDTO;
 import br.com.nat.quadralivre.enums.DiaSemana;
 import br.com.nat.quadralivre.model.Funcionamento;
 import br.com.nat.quadralivre.model.HorarioDisponivel;
@@ -102,15 +103,15 @@ public class HorarioDisponivelService {
         return horarios;
     }
 
-    public List<HorarioDisponivel> get(Long quadraId, LocalDate dataSolicitada){
-        if(dataSolicitada.isBefore(LocalDate.now())){
+    public List<HorarioDisponivel> get(HorarioDisponivelDTO horarioDisponivelDTO){
+        if(horarioDisponivelDTO.getData().isBefore(LocalDate.now())){
             throw new IllegalArgumentException("Reservas só podem ser feitas em datas no futuro.");
         }
 
-        this.quadraRepository.findById(quadraId)
+        this.quadraRepository.findById(horarioDisponivelDTO.getQuadraId())
                 .orElseThrow(() -> new EntityNotFoundException("Não existe quadra cadastrada com esse número de ID."));
 
-        return this.gerarHorariosParaReserva(quadraId, dataSolicitada);
+        return this.gerarHorariosParaReserva(horarioDisponivelDTO.getQuadraId(), horarioDisponivelDTO.getData());
     }
 
 }

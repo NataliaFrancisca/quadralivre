@@ -1,5 +1,6 @@
 package br.com.nat.quadralivre.service.finder;
 
+import br.com.nat.quadralivre.dto.HorarioDisponivelDTO;
 import br.com.nat.quadralivre.dto.ReservaDTO;
 import br.com.nat.quadralivre.model.HorarioDisponivel;
 import br.com.nat.quadralivre.service.HorarioDisponivelService;
@@ -16,10 +17,7 @@ public class HorarioDisponivelFinderService {
     private final HorarioDisponivelService horarioDisponivelService;
 
     private List<HorarioDisponivel> buscarHorariosDisponives(ReservaDTO reserva){
-        List<HorarioDisponivel> horariosDisponiveis = this.horarioDisponivelService.get(
-                reserva.getQuadraId(),
-                reserva.getDataSolicitada()
-        );
+        List<HorarioDisponivel> horariosDisponiveis = this.horarioDisponivelService.get(new HorarioDisponivelDTO(reserva.getQuadraId(), reserva.getDataSolicitada()));
 
         if(horariosDisponiveis.isEmpty()){
             throw new EntityNotFoundException("Não existe horários de reserva");
@@ -32,11 +30,11 @@ public class HorarioDisponivelFinderService {
         List<HorarioDisponivel> horarios = this.buscarHorariosDisponives(reserva);
 
         Optional<HorarioDisponivel> horarioReservaDados = horarios.stream()
-                .filter(dto -> dto.getId() == reserva.getHorarioDisponivelId())
+                .filter(dto -> dto.getId() == reserva.getHorarioReservaId())
                 .findFirst();
 
         if(horarioReservaDados.isEmpty()){
-            throw new EntityNotFoundException("Horário de reserva com ID " +  reserva.getHorarioDisponivelId() + " não foi encontrada.");
+            throw new EntityNotFoundException("Horário de reserva com ID " +  reserva.getHorarioReservaId() + " não foi encontrada.");
         }
 
         return horarioReservaDados.get();
