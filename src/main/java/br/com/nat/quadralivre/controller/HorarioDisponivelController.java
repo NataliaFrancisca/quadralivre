@@ -1,19 +1,17 @@
 package br.com.nat.quadralivre.controller;
 
+import br.com.nat.quadralivre.dto.HorarioDisponivelDTO;
+import br.com.nat.quadralivre.infra.CorpoRequisicao;
 import br.com.nat.quadralivre.infra.RespostaAPI;
 import br.com.nat.quadralivre.infra.RespostasComuns;
 import br.com.nat.quadralivre.service.HorarioDisponivelService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/horarios-disponiveis")
@@ -29,15 +27,12 @@ public class HorarioDisponivelController {
     @Operation(summary = "Busca pelos horários disponiveis para reserva",
             description = "Retorna uma lista com os horários disponiveis para reserva da quadra indicada.")
     @RespostasComuns
+    @CorpoRequisicao(descricao = "Objeto com a informação do horário escolhido.", dto = HorarioDisponivelDTO.class)
     @GetMapping
-    public ResponseEntity<RespostaAPI> get(
-            @Parameter(description = "Identificador da quadra, ex.: 1")
-            @RequestParam Long quadraId,
-            @Parameter(description = "Data para consultar horários para reserva, ex.: 2025-03-19")
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate data){
+    public ResponseEntity<RespostaAPI> get(@Valid @RequestBody HorarioDisponivelDTO horarioDisponivelDTO){
         return RespostaAPI.build(
                 HttpStatus.OK,
-                this.horarioDisponivelService.get(quadraId, data)
+                this.horarioDisponivelService.get(horarioDisponivelDTO)
         );
     }
 }
