@@ -1,13 +1,12 @@
 package br.com.nat.quadralivre.controller;
 
 import br.com.nat.quadralivre.dto.GestorDTO;
+import br.com.nat.quadralivre.infra.CorpoRequisicao;
 import br.com.nat.quadralivre.infra.RespostaAPI;
 import br.com.nat.quadralivre.infra.RespostasComuns;
 import br.com.nat.quadralivre.service.GestorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -32,17 +31,13 @@ public class GestorController {
             summary = "Cria um novo gestor.",
             description = "Cria um novo gestor que é o responsável pela quadra."
     )
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Objeto com as informações do Gestor.", required = true, content = @Content(
-            mediaType = "application/json",
-            schema = @Schema(implementation = GestorDTO.class)
-    ))
+    @CorpoRequisicao(descricao = "Objeto com as informações do Gestor.", dto=GestorDTO.class)
     @RespostasComuns
     @PostMapping
     public ResponseEntity<RespostaAPI> create(
             @Valid @RequestBody GestorDTO gestorDTO){
         return RespostaAPI.build(
                 HttpStatus.CREATED,
-                "Gestor cadastrado com sucesso.",
                 this.gestorService.create(gestorDTO)
         );
     }
@@ -79,10 +74,7 @@ public class GestorController {
             summary = "Atualiza os dados de um gestor.",
             description = "Atualiza os dados de um gestor, baseado no e-mail indicado."
     )
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Objeto com as informações atualizadas do Gestor.", required = true, content = @Content(
-            mediaType = "application/json",
-            schema = @Schema(implementation = GestorDTO.class)
-    ))
+    @CorpoRequisicao(descricao = "Objeto com as informações atualizadas do Gestor.", dto=GestorDTO.class)
     @RespostasComuns
     @PutMapping("/email")
     public ResponseEntity<RespostaAPI> update(
