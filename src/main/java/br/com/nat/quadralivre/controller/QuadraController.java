@@ -16,7 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/quadra")
+@RequestMapping("/quadras")
 @Tag(name = "Quadra", description = "Operações relacionadas a quadra.")
 public class QuadraController {
     private final QuadraService quadraService;
